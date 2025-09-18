@@ -56,6 +56,11 @@ module.exports = (routing, port) => {
         // }
         // res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
         // res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        if (urlObj.pathname === '/') {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ message: 'Server is running' }));
+        return;
+    }
 
         if (req.method === 'OPTIONS') {
             res.writeHead(204);

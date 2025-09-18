@@ -1,0 +1,47 @@
+{
+   "_moduleAliases": {
+      "@lib": "src/lib",
+      "@storages": "src/storages",
+      "@services": "src/services",
+      "transport": "src/transport",
+      "static": "src",
+      "loadRoutes": "src"
+   },
+   "name": "desk",
+   "version": "1.0.0",
+   "main": "./src/main.js",
+   "scripts": {
+      "start": "node ./src/main.js",
+      "dev": "set NODE_PATH=./src&& nodemon ./src/main.js",
+      "lint": "eslint .",
+      "lint:fix": "eslint . --fix"
+   },
+   "author": "Ilymof",
+   "license": "ISC",
+   "description": "",
+   "dependencies": {
+      "bcrypt": "^6.0.0",
+      "cors": "^2.8.5",
+      "dotenv": "^16.4.7",
+      "imagemin": "^9.0.1",
+      "imagemin-webp": "^8.0.0",
+      "jsonwebtoken": "^9.0.2",
+      "metaschema": "^2.2.1",
+      "node-cron": "^3.0.3",
+      "pg": "^8.13.1",
+      "ws": "^8.18.3"
+   },
+   "devDependencies": {
+      "@eslint/js": "^9.20.0",
+      "@types/imagemin": "^9.0.1",
+      "@types/imagemin-webp": "^7.0.3",
+      "@types/node": "^22.10.10",
+      "eslint": "^9.20.1",
+      "eslint-config-prettier": "^10.0.1",
+      "eslint-plugin-import": "^2.31.0",
+      "globals": "^15.15.0",
+      "module-alias": "^2.2.3",
+      "nodemon": "^3.1.9",
+      "typescript": "^5.7.3"
+   }
+}

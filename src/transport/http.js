@@ -124,56 +124,57 @@ module.exports = (routing, port) => {
             if (urlObj.pathname.startsWith('/uploads')) {
                 filePath = path.join(__dirname, '../../uploads', urlObj.pathname.substring('/uploads'.length));
                 console.log(`Trying to serve upload file: ${filePath}`);
-            } else {
-                const rootDir = path.join(__dirname, '../../frontend/dist');
-                filePath = path.join(rootDir, urlObj.pathname);
-                console.log(`Trying to serve frontend file: ${filePath}`);
-
-                try {
-                    const stats = await fs.stat(filePath);
-                    if (stats.isFile()) {
-                        const data = await fs.readFile(filePath);
-                        const ext = path.extname(filePath).toLowerCase();
-                        const contentType = mimeTypes[ext] || 'application/octet-stream';
-                        res.writeHead(200, { 'Content-Type': contentType });
-                        res.end(data);
-                        console.log(`${socket.remoteAddress} ${method} ${url} - File served`);
-                        return;
-                    }
-                } catch (err) {
-                    console.log(`File not found, treating as SPA route: ${filePath}`);
-                }
-
-                const indexPath = path.join(rootDir, 'index.html');
-                console.log(`Serving SPA index: ${indexPath}`);
-                try {
-                    const data = await fs.readFile(indexPath);
-                    res.writeHead(200, { 'Content-Type': 'text/html' });
-                    res.end(data);
-                    console.log(`${socket.remoteAddress} ${method} ${url} - SPA index.html served`);
-                } catch (indexErr) {
-                    console.error(`Error reading index.html ${indexPath}: ${indexErr.message}`);
-                    res.writeHead(404, { 'Content-Type': 'text/plain' });
-                    res.end('404 Not Found');
-                    console.log(`${socket.remoteAddress} ${method} ${url} - File not found`);
-                }
-                return;
             }
+            //  else {
+                // const rootDir = path.join(__dirname, '../../frontend/dist');
+                // filePath = path.join(rootDir, urlObj.pathname);
+                // console.log(`Trying to serve frontend file: ${filePath}`);
+
+                // try {
+                //     const stats = await fs.stat(filePath);
+                //     if (stats.isFile()) {
+                //         const data = await fs.readFile(filePath);
+                //         const ext = path.extname(filePath).toLowerCase();
+                //         const contentType = mimeTypes[ext] || 'application/octet-stream';
+                //         res.writeHead(200, { 'Content-Type': contentType });
+                //         res.end(data);
+                //         console.log(`${socket.remoteAddress} ${method} ${url} - File served`);
+                //         return;
+                //     }
+                // } catch (err) {
+                //     console.log(`File not found, treating as SPA route: ${filePath}`);
+                // }
+
+                // const indexPath = path.join(rootDir, 'index.html');
+                // console.log(`Serving SPA index: ${indexPath}`);
+            //     try {
+            //         const data = await fs.readFile(indexPath);
+            //         res.writeHead(200, { 'Content-Type': 'text/html' });
+            //         res.end(data);
+            //         console.log(`${socket.remoteAddress} ${method} ${url} - SPA index.html served`);
+            //     } catch (indexErr) {
+            //         console.error(`Error reading index.html ${indexPath}: ${indexErr.message}`);
+            //         res.writeHead(404, { 'Content-Type': 'text/plain' });
+            //         res.end('404 Not Found');
+            //         console.log(`${socket.remoteAddress} ${method} ${url} - File not found`);
+            //     }
+            //     return;
+            // }
 
             // Обработка uploads
-            try {
-                const data = await fs.readFile(filePath);
-                const ext = path.extname(filePath).toLowerCase();
-                const contentType = mimeTypes[ext] || 'application/octet-stream';
-                res.writeHead(200, { 'Content-Type': contentType });
-                res.end(data);
-                console.log(`${socket.remoteAddress} ${method} ${url} - File served`);
-            } catch (err) {
-                console.error(`Error reading upload file ${filePath}: ${err.message}`);
-                res.writeHead(404, { 'Content-Type': 'text/plain' });
-                res.end('404 Not Found');
-                console.log(`${socket.remoteAddress} ${method} ${url} - Upload file not found`);
-            }
+        //     try {
+        //         const data = await fs.readFile(filePath);
+        //         const ext = path.extname(filePath).toLowerCase();
+        //         const contentType = mimeTypes[ext] || 'application/octet-stream';
+        //         res.writeHead(200, { 'Content-Type': contentType });
+        //         res.end(data);
+        //         console.log(`${socket.remoteAddress} ${method} ${url} - File served`);
+        //     } catch (err) {
+        //         console.error(`Error reading upload file ${filePath}: ${err.message}`);
+        //         res.writeHead(404, { 'Content-Type': 'text/plain' });
+        //         res.end('404 Not Found');
+        //         console.log(`${socket.remoteAddress} ${method} ${url} - Upload file not found`);
+        //     }
         } catch (error) {
             console.error(error);
             res.writeHead(400, { 'Content-Type': 'application/json' });

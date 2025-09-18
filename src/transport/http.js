@@ -39,23 +39,23 @@ const mimeTypes = {
     '.ico': 'image/x-icon'
 };
 
-const allowedOrigins = [
-    'https://apsny-billboard-production.up.railway.app',
-    'http://localhost:8800',
-    'http://83.222.18.3',
-    'ws://localhost:8800'
-];
+// const allowedOrigins = [
+//     'https://apsny-billboard-production.up.railway.app',
+//     'http://localhost:8800',
+//     'http://83.222.18.3',
+//     'ws://localhost:8800'
+// ];
 
 module.exports = (routing, port) => {
     const server = http.createServer(async (req, res) => {
-        const origin = req.headers.origin;
-        if (allowedOrigins.includes(origin)) {
-            res.setHeader('Access-Control-Allow-Origin', origin);
-        } else {
-            res.setHeader('Access-Control-Allow-Origin', '');
-        }
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        // const origin = req.headers.origin;
+        // if (allowedOrigins.includes(origin)) {
+        //     res.setHeader('Access-Control-Allow-Origin', origin);
+        // } else {
+        //     res.setHeader('Access-Control-Allow-Origin', '');
+        // }
+        // res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+        // res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
         if (req.method === 'OPTIONS') {
             res.writeHead(204);
@@ -182,15 +182,11 @@ module.exports = (routing, port) => {
         }
     });
 
-    const address = 'ws://localhost:8800' // Локальный адрес
-    initializeWebSocket(server, address)
     
-    // Запуск HTTP-сервера
     server.listen(port, '0.0.0.0', () => {
         console.log(`API server on port ${port}`)
     });
 
-    // Периодическая очистка токенов
     cron.schedule('0 * * * *', async () => {
         try {
             const sql = 'DELETE FROM tokens WHERE expires_at < NOW() RETURNING *;';

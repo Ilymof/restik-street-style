@@ -71,15 +71,17 @@ module.exports = (routing, port) => {
             return;
         }
 
+            
+        try {
+            const { url, socket, method } = req;
+            const urlObj = new URL(req.url, `http://${req.headers.host}`);
+
             if (urlObj.pathname === '/') {
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ message: 'Server is running' }));
             return;
         }
 
-        try {
-            const { url, socket, method } = req;
-            const urlObj = new URL(req.url, `http://${req.headers.host}`);
             const pathParts = urlObj.pathname.substring(1).split('/');
             const [place] = pathParts;
 

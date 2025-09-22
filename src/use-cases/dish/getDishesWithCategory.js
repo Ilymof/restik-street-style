@@ -20,7 +20,7 @@ const getDishesByCategory = async () => {
             d.categoryid
          FROM category c
          LEFT JOIN dish d ON c.id = d.categoryid
-         ORDER BY c.name, d.name
+         ORDER BY c.id, d.id
       `;
       const result = await safeDbCall(() => category.query(query));
 
@@ -72,12 +72,7 @@ const getDishesByCategory = async () => {
 
          return acc;
       }, []);
-      groupedDishes.sort((a, b) => a.categoryId - b.categoryId);
-
-      groupedDishes.forEach(category => {
-         category.dishes.sort((a, b) => a.id - b.id);
-      });
-
+      
       return groupedDishes;
 };
 

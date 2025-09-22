@@ -2,7 +2,6 @@
 
 const db = require('../db.js')
 const admins = db('admins')
-const tokens = db('tokens')
 const safeDbCall = require('../lib/safeDbCall.js')
 const loginAdmin = require('../use-cases/auth/login.js')
 const logout = require('../use-cases/auth/logout.js')

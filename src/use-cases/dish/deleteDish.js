@@ -5,12 +5,12 @@ const errorHandler = require('@lib/errorHandler')
 const db = require('../../db')
 const dishes = db('dish')
 const safeDbCall = require('../../lib/safeDbCall.js')
-
+const throwValidationError = require('../../lib/ValidationError')
 
 const deleteDish = async (args) => { 
       let {dishId} = args 
       if(!dishId){
-         throw new Error("Отсутсвует id в параметрах")
+         throwValidationError("Отсутсвует id в параметрах")
       }
       dishId = parseInt(dishId)
  
@@ -18,7 +18,7 @@ const deleteDish = async (args) => {
       console.log(dish);
       
       if (dish.length < 1) {
-         throw new Error(`Не существует блюда с id ${dishId}`)
+         throwValidationError(`Не существует блюда с id ${dishId}`)
       }
       console.log(dish[0].image);
       
@@ -30,7 +30,7 @@ const deleteDish = async (args) => {
                await fs.access(filePath)
                await fs.unlink(filePath)
             } catch (err) {
-               throw new Error('Ошибка при удалении фото')
+               throwValidationError('Ошибка при удалении фото')
             }
          }
 

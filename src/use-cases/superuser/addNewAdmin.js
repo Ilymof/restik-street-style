@@ -4,6 +4,7 @@ const admins = db('admins');
 const bcrypt = require('bcrypt')
 const TokenService = require('../../services/auth/JWTService')
 const removeBearer = require('../../lib/removeBearer')
+const throwValidationError = require('../../lib/ValidationError')
 
 async function addNewAdmin(args, token) {
     const username = args.username
@@ -20,7 +21,7 @@ async function addNewAdmin(args, token) {
         await admins.create({username,password: hashedPassword,role: 1});
         console.log(`Админ с именем пользователя ${username} был успешно добавлен`);
     } else {
-        throw new Error("Не удалось добавить админа" )
+        throwValidationError("Не удалось добавить админа" )
     }
        
 }

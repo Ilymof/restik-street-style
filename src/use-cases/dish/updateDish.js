@@ -1,5 +1,5 @@
 
-const errorHandler = require('../../lib/errorHandler')
+const throwValidationError = require('../../lib/ValidationError')
 const { processMultipart } = require('../../lib/multipartParser')
 const db = require('../../db')
 const dishes = db('dish')
@@ -8,17 +8,15 @@ const { promises: fs } = require('fs')
 const path = require('path')
 
 const updateDish = async (rawBody) => {
-   try {
-
       const boundary = rawBody.headers['content-type'].split('boundary=')[1]
-      if (!boundary) throw new Error('Invalid multipart/form-data')
+      if (!boundary) throwValidationError('Invalid multipart/form-data')
 
       const { fields, files } = await processMultipart(rawBody.body, boundary)
 
       const imageFile = files.find(f => f.name === 'image') 
       const imagePath = imageFile ? imageFile.filename : null
       
-      let {id, name, price, description, time_to_cook, dish_weight, composition, categoryid, dish_status} = fields
+      let {id, name, price, description, time_to_cook, composition, categoryid, dish_status} = fields
 
       const existing_dish = await safeDbCall(() => dishes.read(id))
     
@@ -33,7 +31,7 @@ const updateDish = async (rawBody) => {
                        await fs.access(filePath)
                        await fs.unlink(filePath)
                     } catch (err) {
-                       throw new Error('Ошибка при удалении фото')
+                       throwValidationError('Ошибка при удалении фото')
                     }
                  }
       }
@@ -44,7 +42,7 @@ const updateDish = async (rawBody) => {
             await fs.writeFile(FilePath, imageFile.data);
             console.log('New file written:', FilePath);
          } catch (err) {
-            throw new Error('Ошибка при записи нового фото: ' + err.message);
+            throwValidationError('Ошибка при записи нового фото');
          }
       }
       
@@ -61,7 +59,6 @@ const updateDish = async (rawBody) => {
          price,
          description,
          time_to_cook,
-         dish_weight,
          composition,
          categoryid,
          dish_status
@@ -73,10 +70,6 @@ const updateDish = async (rawBody) => {
       }
       
       return await safeDbCall(() => dishes.update(id, dish))
-
-   } catch (error) {
-      throw errorHandler(error)
-   }
 }
 
 module.exports = updateDish

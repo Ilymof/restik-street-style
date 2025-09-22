@@ -3,25 +3,22 @@ const bcrypt = require('bcrypt');
 const TokenService = require('../../services/auth/JWTService');
 const db = require('../../db');
 const TokenStorage = require('../../storages/TokenStorage');
-const errorHandler = require('../../lib/errorHandler');
 const admins = db('admins');
-const { processMultipart } = require('../../lib/multipartParser');
+const throwValidationError = require('../../lib/ValidationError')
 
 async function login(args) {
-  try {
-    
     const username = args.username
     const password = args.password
     const sql = `SELECT * FROM ADMINS WHERE username = $1`;
     const admin = await admins.query(sql, [username]);
 
     if (admin.rows.length < 1) {
-      throw new Error(`Админ с логином ${username} не найден`);
+      throwValidationError(`Админ с логином ${username} не найден`);
     }
 
     const isValid = await bcrypt.compare(password, admin.rows[0].password);
     if (!isValid) {
-      throw new Error('Неверный пароль');
+      throwValidationError('Неверный пароль');
     }
 
     const exist_token = await TokenStorage.getToken(username);
@@ -36,9 +33,7 @@ async function login(args) {
     await TokenStorage.setToken(username, role, tokens.refreshToken);
 
     return tokens;
-  } catch (error) {
-    throw errorHandler(error);
-  }
+
 }
 
 module.exports = login;

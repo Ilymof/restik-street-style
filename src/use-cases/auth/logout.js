@@ -6,9 +6,9 @@ const tokens = db('tokens')
 const TokenStorage = require('../../storages/TokenStorage');
 const jwt = require('jsonwebtoken')
 const safeDbCall = require('../../lib/safeDbCall.js')
+const throwValidationError = require('../../lib/ValidationError')
 
 async function logout(args) {
-  try {
     const username = args.username 
   
     const sql =`
@@ -18,12 +18,9 @@ async function logout(args) {
     if(username) {
         await safeDbCall(() => tokens.query(sql, [username]))
         console.log(`Пользователь ${username} успешно разлогинен`);
-    } 
-  } catch (error) {
-    throw new Error('Ошибка при logout' + error.message)
-  }
-    
-    
+    } else {
+      throwValidationError(`не найден пользователь с username: ${username}`)
+    }
 }
 
 

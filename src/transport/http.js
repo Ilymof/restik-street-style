@@ -1,12 +1,11 @@
 'use strict';
 const http = require('node:http');
 const { Buffer } = require('buffer');
-const fs = require('fs').promises;
 const path = require('path');
 const cron = require('node-cron');
 const db = require('../db');
 const token = db('tokens');
-const { initializeWebSocket } = require('../websocket/chat');
+const errorHandler = require('../lib/errorHandler')
 const restrictAccess = require('../lib/restrictAccess');
 const { ACCESS_CONTROL } = require('../roles');
 
@@ -186,8 +185,9 @@ module.exports = (routing, port) => {
         //     }
         } catch (error) {
             console.error(error);
-            res.writeHead(400, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ error: error.message || 'Internal Server Error' }));
+            const errorResponse = errorHandler(error);
+            res.writeHead(errorResponse.status || 500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(errorResponse));  
         }
     });
 

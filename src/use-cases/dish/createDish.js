@@ -1,5 +1,5 @@
 
-const errorHandler = require('../../lib/errorHandler')
+const throwValidationError = require('../../lib/ValidationError')
 const { processMultipart } = require('../../lib/multipartParser')
 const db = require('../../db')
 const dishes = db('dish')
@@ -8,9 +8,8 @@ const { promises: fs } = require('fs')
 const path = require('path')
 
 const createDish = async (rawBody) => {
-   try {
       const boundary = rawBody.headers['content-type'].split('boundary=')[1]
-      if (!boundary) throw new Error('Invalid multipart/form-data')
+      if (!boundary) throwValidationError('Invalid multipart/form-data')
 
       const { fields, files } = await processMultipart(rawBody.body, boundary)
 
@@ -23,20 +22,17 @@ const createDish = async (rawBody) => {
                   await fs.writeFile(FilePath, imageFile.data);
                   console.log('New file written:', FilePath);
                } catch (err) {
-                  throw new Error('Ошибка при записи нового фото' + err.message);
+                  throwValidationError('Ошибка при записи нового фото');
                }
             }
 
-      const {name, price ,description ,time_to_cook ,dish_weight, composition, categoryid } = fields
-
-      
+      const {name, price ,description ,time_to_cook , composition, categoryid } = fields
       
       const dish = {
          name, 
          price,
          description,
          time_to_cook,
-         dish_weight,
          composition,
          categoryid,
          image: imagePath
@@ -45,10 +41,6 @@ const createDish = async (rawBody) => {
       console.log(dish);
 
       return (await safeDbCall(() => dishes.create(dish)))
-
-   } catch (error) {
-      throw errorHandler(error)
-   }
 }
 
 module.exports = createDish

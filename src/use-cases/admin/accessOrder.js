@@ -1,16 +1,15 @@
 'use strict';
-const errorHandler = require('../../lib/errorHandler');
 const db = require('../../db');
 const orders = db('orders');
 const safeDbCall = require('../../lib/safeDbCall');
+const throwValidationError = require('../../lib/ValidationError')
 
 const accessOrder = async (args) => {
-   try {
-      if (!args.id) throw new Error('Поле id отсутствует');
+      if (!args.id) throwValidationError('Поле id отсутствует');
 
       const existingOrder = await safeDbCall(() => orders.read(args.id));
       if (!existingOrder || existingOrder.length < 1) {
-         throw new Error(`Заказ с id ${args.id} не найден`);
+         throwValidationError(`Заказ с id ${args.id} не найден`);
       }
 
 
@@ -19,13 +18,10 @@ const accessOrder = async (args) => {
       }
       const result = await safeDbCall(() => orders.update(args.id, order));
       if (!result) {
-         throw new Error('Ошибка при обновлении заказа' + err.message);
+         throwValidationError('Ошибка при обновлении заказа');
       }
 
-      return result
-   } catch (error) {
-      throw errorHandler(error);
-   }
+      return result 
 };
 
 module.exports = accessOrder;

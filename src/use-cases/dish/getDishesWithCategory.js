@@ -1,10 +1,9 @@
 'use strict';
-const errorHandler = require('../../lib/errorHandler');
 const db = require('../../db');
 const safeDbCall = require('../../lib/safeDbCall');
+const throwValidationError = require('../../lib/ValidationError')
 
 const getDishesByCategory = async () => {
-   try {
       const category = db('category');
       const query = `
          SELECT 
@@ -15,7 +14,6 @@ const getDishesByCategory = async () => {
             d.price,
             d.description,
             d.time_to_cook,
-            d.dish_weight,
             d.dish_status,
             d.composition,
             d.image,
@@ -42,7 +40,6 @@ const getDishesByCategory = async () => {
             price, 
             description, 
             time_to_cook, 
-            dish_weight, 
             dish_status, 
             composition, 
             image, 
@@ -66,7 +63,6 @@ const getDishesByCategory = async () => {
                price,
                description,
                time_to_cook,
-               dish_weight,
                dish_status,
                composition,
                image,
@@ -78,10 +74,6 @@ const getDishesByCategory = async () => {
       }, []);
 
       return groupedDishes;
-   } catch (error) {
-      console.error('Error in getDishesByCategory:', error);
-      throw errorHandler(error);
-   }
 };
 
 module.exports = getDishesByCategory;

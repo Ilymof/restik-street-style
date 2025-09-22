@@ -2,6 +2,7 @@
 
 const jwt = require('jsonwebtoken')
 const { JWT } = require('../../config')
+const throwValidationError = require('../../lib/ValidationError')
 
 const TokenService = {
    generateTokens(payload) {
@@ -37,7 +38,7 @@ const TokenService = {
    refreshAccessToken(refreshToken) {
       const decoded = this.verifyRefreshToken(refreshToken)
       if (!decoded) {
-         throw new Error('Invalid or expired refresh token')
+         throwValidationError('Invalid or expired refresh token')
       }
       // Генерируем новый access-токен с тем же payload
       const payload = {
@@ -55,7 +56,7 @@ const TokenService = {
    logout(refreshToken) {
       const decoded = this.verifyRefreshToken(refreshToken)
       if (!decoded) {
-         throw new Error('Invalid or expired refresh token')
+         throwValidationError('Invalid or expired refresh token')
       }
       return decoded.sub 
    }

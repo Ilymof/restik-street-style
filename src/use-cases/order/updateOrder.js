@@ -4,14 +4,14 @@ const db = require('../../db');
 const orders = db('orders');
 const dishes = db('dish');
 const safeDbCall = require('../../lib/safeDbCall');
+const throwValidationError = require('../../lib/ValidationError')
 
 const updateOrder = async (args) => {
-   try {
-      if (!args.id) throw new Error('Поле id отсутствует');
+      if (!args.id) throwValidationError('Поле id отсутствует');
 
       const existingOrder = await safeDbCall(() => orders.read(args.id));
       if (!existingOrder || existingOrder.length < 1) {
-         throw new Error(`Заказ с id ${args.id} не найден`);
+         throwValidationError(`Заказ с id ${args.id} не найден`);
       }
 
       const order = {};
@@ -33,7 +33,7 @@ const updateOrder = async (args) => {
 
       if (args.dishes) {
          if (!Array.isArray(args.dishes) || args.dishes.length === 0) {
-            throw new Error('Dishes должен быть непустым массивом');
+            throwValidationError('Dishes должен быть непустым массивом');
          }
 
          const orderedDishes = [];
@@ -45,12 +45,12 @@ const updateOrder = async (args) => {
             const dishIdNum = parseInt(dishId);
             const quantityNum = parseInt(quantity);
             if (isNaN(dishIdNum) || isNaN(quantityNum) || quantityNum <= 0) {
-               throw new Error(`Неверные данные для блюда: dishId=${dishId}, quantity=${quantity}`);
+               throwValidationError(`Неверные данные для блюда: dishId=${dishId}, quantity=${quantity}`);
             }
 
             const dish = await safeDbCall(() => dishes.read(dishIdNum));
             if (dish.length < 1) {
-               throw new Error(`Блюдо с id ${dishIdNum} не найдено`);
+               throwValidationError(`Блюдо с id ${dishIdNum} не найдено`);
             }
 
             const dishPrice = dish[0].price * quantityNum;
@@ -69,18 +69,15 @@ const updateOrder = async (args) => {
       }
 
       if (Object.keys(order).length === 0) {
-         throw new Error('Нет данных для обновления');
+         throwValidationError('Нет данных для обновления');
       }
 
       const result = await safeDbCall(() => orders.update(args.id, order));
       if (!result) {
-         throw new Error('Ошибка при обновлении заказа' + err.message);
+         throwValidationError('Ошибка при обновлении заказа');
       }
 
       return result
-   } catch (error) {
-      throw errorHandler(error);
-   }
 };
 
-module.exports = updateOrder;
+module.exports = updateOrder

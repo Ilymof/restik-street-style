@@ -7,7 +7,7 @@ module.exports = (table) => ({
       try {
          return await pool.query(sql, args)
       } catch (err) {
-         throw new Error(`Ошибка выполнения запроса: ${err.message}`)
+         throwValidationError(`Ошибка выполнения запроса: ${err.message}`)
       }
    },
 
@@ -30,7 +30,7 @@ module.exports = (table) => ({
          const result = await pool.query(sql, Object.values(record))
          return result.rows
       } catch (err) {
-         throw new Error(`Ошибка вставки в ${table}: ${err.message}`)
+         throwValidationError(`Ошибка вставки в ${table}: ${err.message}`)
       }
    },
 
@@ -38,14 +38,14 @@ module.exports = (table) => ({
       try {
          const keys = Object.keys(record)
          if (keys.length === 0) {
-            throw new Error('Обновление без данных невозможно')
+            throwValidationError('Обновление без данных невозможно')
          }
          const updates = keys.map((key, i) => `${key} = $${i + 1}`).join(', ')
          const sql = `UPDATE ${table} SET ${updates} WHERE id = $${keys.length + 1} RETURNING *`
          const result = await pool.query(sql, [...Object.values(record), id])
          return result.rows
       } catch (err) {
-         throw new Error(`Ошибка обновления ${table}: ${err.message}`)
+         throwValidationError(`Ошибка обновления ${table}: ${err.message}`)
       }
    },
 
@@ -54,7 +54,7 @@ module.exports = (table) => ({
          const result = await pool.query(`DELETE FROM ${table} WHERE id = $1 RETURNING *`, [id])
          return result.rows
       } catch (err) {
-         throw new Error(`Ошибка удаления из ${table}: ${err.message}`)
+         throwValidationError(`Ошибка удаления из ${table}: ${err.message}`)
       }
    }
 })

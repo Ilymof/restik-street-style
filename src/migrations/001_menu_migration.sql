@@ -11,8 +11,8 @@ CREATE TABLE dish (
     name VARCHAR(255) NOT NULL,
     price INTEGER NOT NULL,
     description VARCHAR(255) NOT NULL,
-    time_to_cook VARCHAR(3),
-    dish_status BOOLEAN DEFAULT TRUE, 
+    dish_status BOOLEAN DEFAULT TRUE,
+    dish_weight VARCHAR(50),
     composition TEXT[],
     image VARCHAR(255),
     categoryid INT NOT NULL REFERENCES category(id) ON DELETE CASCADE

@@ -1,6 +1,7 @@
 'use strict';
 const http = require('node:http');
 const { Buffer } = require('buffer');
+const fs = require('fs').promises;
 const path = require('path');
 const cron = require('node-cron');
 const db = require('../db');
@@ -169,20 +170,19 @@ module.exports = (routing, port) => {
             //     return;
             // }
 
-            // Обработка uploads
-        //     try {
-        //         const data = await fs.readFile(filePath);
-        //         const ext = path.extname(filePath).toLowerCase();
-        //         const contentType = mimeTypes[ext] || 'application/octet-stream';
-        //         res.writeHead(200, { 'Content-Type': contentType });
-        //         res.end(data);
-        //         console.log(`${socket.remoteAddress} ${method} ${url} - File served`);
-        //     } catch (err) {
-        //         console.error(`Error reading upload file ${filePath}: ${err.message}`);
-        //         res.writeHead(404, { 'Content-Type': 'text/plain' });
-        //         res.end('404 Not Found');
-        //         console.log(`${socket.remoteAddress} ${method} ${url} - Upload file not found`);
-        //     }
+            try {
+                const data = await fs.readFile(filePath);
+                const ext = path.extname(filePath).toLowerCase();
+                const contentType = mimeTypes[ext] || 'application/octet-stream';
+                res.writeHead(200, { 'Content-Type': contentType });
+                res.end(data);
+                console.log(`${socket.remoteAddress} ${method} ${url} - File served`);
+            } catch (err) {
+                console.error(`Error reading upload file ${filePath}: ${err.message}`);
+                res.writeHead(404, { 'Content-Type': 'text/plain' });
+                res.end('404 Not Found');
+                console.log(`${socket.remoteAddress} ${method} ${url} - Upload file not found`);
+            }
         } catch (error) {
             console.error(error);
             const errorResponse = errorHandler(error);

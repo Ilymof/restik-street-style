@@ -6,7 +6,10 @@ const getDishesByCategory = require('../use-cases/dish/getDishesWithCategory.js'
 const safeDbCall = require('../lib/safeDbCall.js')
 
 module.exports = {
-   async 'read-all'() {
+
+  'read-all': async () => await safeDbCall(() => categories.read()),
+  
+   async 'read-with-dishes'() {
       return await getDishesByCategory()
    },
 

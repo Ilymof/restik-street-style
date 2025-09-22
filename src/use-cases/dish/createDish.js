@@ -26,7 +26,7 @@ const createDish = async (rawBody) => {
                }
             }
 
-      const {name, price ,description ,composition, categoryid, dish_weight } = fields
+      const {name, price ,description ,dish_weight , composition, categoryid } = fields
       
       const dish = {
          name, 

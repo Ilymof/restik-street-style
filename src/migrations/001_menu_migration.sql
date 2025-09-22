@@ -10,7 +10,7 @@ CREATE TABLE dish (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     price INTEGER NOT NULL,
-    description VARCHAR(255) NOT NULL,
+    description VARCHAR(255),
     dish_status BOOLEAN DEFAULT TRUE,
     dish_weight VARCHAR(50),
     composition TEXT[],
@@ -41,8 +41,6 @@ VALUES
 ('Греческий', 500, 'Салат с огурцами, помидорами, фетой и оливками', '250', TRUE, ARRAY['Огурцы', 'Помидоры', 'Фета', 'Оливки'], 'greek.jpg', 3),
 ('Капрезе', 600, 'Салат с моцареллой, томатами и базиликом', '250', TRUE, ARRAY['Моцарелла', 'Томаты', 'Базилик', 'Оливковое масло'], 'caprese.jpg', 3),
 -- Категория 4: Напитки
-('Кола', 80, 'Суп из свежих томатов с базиликом', '300', TRUE, ARRAY['Томаты', 'Базилик', 'Сливки'], 'cola.jpg', 4),
-('Lit Energy', 125, 'Нежный суп с шампиньонами и сливками', '300',  TRUE, ARRAY['Шампиньоны', 'Сливки', 'Лук'], 'lit_energy.jpg', 4),
-('Burn', 140, 'Классический борщ со свеклой и сметаной', '350', TRUE, ARRAY['Свекла', 'Говядина', 'Картофель', 'Сметана'], 'burn.jpg', 4);
-
-
+('Кола', 80, '', '300', TRUE, ARRAY[]::text[], 'cola.jpg', 4),
+('Lit Energy', 125, '', '300', TRUE, ARRAY[]::text[], 'lit_energy.jpg', 4),
+('Burn', 140, '', '350', TRUE, ARRAY[]::text[], 'burn.jpg', 4);

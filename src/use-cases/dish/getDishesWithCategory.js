@@ -72,6 +72,11 @@ const getDishesByCategory = async () => {
 
          return acc;
       }, []);
+      groupedDishes.sort((a, b) => a.categoryId - b.categoryId);
+
+      groupedDishes.forEach(category => {
+         category.dishes.sort((a, b) => a.id - b.id);
+      });
 
       return groupedDishes;
 };

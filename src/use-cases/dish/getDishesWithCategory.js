@@ -14,6 +14,7 @@ const getDishesByCategory = async () => {
             d.price,
             d.description,
             d.dish_status,
+            d.dish_weight,
             d.composition,
             d.image,
             d.categoryid
@@ -40,6 +41,7 @@ const getDishesByCategory = async () => {
             description, 
             dish_status, 
             composition, 
+            dish_weight,
             image, 
             categoryid 
          } = row;
@@ -62,6 +64,7 @@ const getDishesByCategory = async () => {
                description,
                dish_status,
                composition,
+               dish_weight,
                image,
                categoryid
             });

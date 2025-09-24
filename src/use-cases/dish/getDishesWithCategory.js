@@ -1,7 +1,6 @@
 'use strict';
 const db = require('../../db');
 const safeDbCall = require('../../lib/safeDbCall');
-const throwValidationError = require('../../lib/ValidationError')
 
 const getDishesByCategory = async () => {
       const category = db('category');

@@ -59,6 +59,7 @@ const getDishesByCategory = async () => {
             category.dishes.push({
                id: dish_id,
                name: dish_name,
+               categoryName: category_name,
                price,
                description,
                dish_status,

@@ -1,4 +1,3 @@
-
 const throwValidationError = require('../../lib/ValidationError')
 const { processMultipart } = require('../../lib/multipartParser')
 const db = require('../../db')
@@ -26,16 +25,33 @@ const createDish = async (rawBody) => {
                }
             }
 
-      const {name, price ,description ,dish_weight , composition, categoryid } = fields
+      let {name, price ,description ,dish_weight , composition, categoryid, dish_status, resize, size} = fields
       
       const dish = {
-         name, 
-         price,
-         description,
-         composition,
-         categoryid,
-         dish_weight,
-         image: imagePath
+         ...(name && { name }), 
+         ...(price && { price: parseInt(price) }),
+         ...(description !== undefined && { description }),
+         ...(dish_weight && { dish_weight }),
+         ...(composition && { composition }),
+         ...(categoryid && { categoryid: parseInt(categoryid) }),
+         ...(imagePath && { image: imagePath }),
+         ...(dish_status !== undefined && { dish_status: dish_status === '1' || dish_status === 'true' || dish_status === true })
+      }
+
+      if (resize !== undefined) {
+         dish.resize = resize === 'true' || resize === '1' || resize === true;
+         if (!dish.resize && size) {
+            // Optionally reset size to empty if resize is false
+            size = '{}';
+         }
+      }
+
+      if (size) {
+         try {
+            dish.size = JSON.parse(size);
+         } catch (e) {
+            throwValidationError('Неверный формат JSON для size');
+         }
       }
 
       console.log(dish);

@@ -1,9 +1,9 @@
 'use strict';
 const db = require('../../db');
 const safeDbCall = require('../../lib/safeDbCall');
+const category = db('category');
 
 const getDishesByCategory = async () => {
-      const category = db('category');
       const query = `
          SELECT 
             c.id AS category_id,
@@ -16,6 +16,8 @@ const getDishesByCategory = async () => {
             d.dish_weight,
             d.composition,
             d.image,
+            d.resize,
+            d.size,
             d.categoryid
          FROM category c
          LEFT JOIN dish d ON c.id = d.categoryid
@@ -41,6 +43,8 @@ const getDishesByCategory = async () => {
             dish_status, 
             composition, 
             dish_weight,
+            size,
+            resize,
             image, 
             categoryid 
          } = row;
@@ -56,7 +60,7 @@ const getDishesByCategory = async () => {
          }
 
          if (dish_id) {
-            category.dishes.push({
+            const dishObj = {
                id: dish_id,
                name: dish_name,
                categoryName: category_name,
@@ -67,8 +71,13 @@ const getDishesByCategory = async () => {
                dish_weight,
                image,
                categoryid
-            });
+            };
+            if (resize && size && typeof size === 'object') {
+               dishObj.size = Object.keys(size);
+            }
+            category.dishes.push(dishObj);
          }
+
 
          return acc;
       }, []);

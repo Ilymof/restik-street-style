@@ -1,4 +1,3 @@
-
 const throwValidationError = require('../../lib/ValidationError')
 const { processMultipart } = require('../../lib/multipartParser')
 const db = require('../../db')
@@ -16,7 +15,7 @@ const updateDish = async (rawBody) => {
       const imageFile = files.find(f => f.name === 'image') 
       const imagePath = imageFile ? imageFile.filename : null
       
-      let {id, name, price, description, dish_weight, composition, categoryid, dish_status} = fields
+      let {id, name, price, description, dish_weight, composition, categoryid, dish_status, resize, size} = fields
 
       const existing_dish = await safeDbCall(() => dishes.read(id))
     
@@ -31,7 +30,7 @@ const updateDish = async (rawBody) => {
                        await fs.access(filePath)
                        await fs.unlink(filePath)
                     } catch (err) {
-                       throwValidationError('Ошибка при удалении фото')
+                      console.log('Фото нет')
                     }
                  }
       }
@@ -47,25 +46,36 @@ const updateDish = async (rawBody) => {
       }
       
       
-      if (dish_status == 0)
-      {
-        dish_status = 0
-      } else {
-        dish_status = 1
-      }
+      let parsedDishStatus = dish_status === '1' || dish_status === 'true' || dish_status === true;
 
       const dish = {   
-         name, 
-         price,
-         description,
-         dish_weight,
-         composition,
-         categoryid,
-         dish_status
+         ...(name && { name }), 
+         ...(price && { price: parseInt(price) }),
+         ...(description !== undefined && { description }),
+         ...(dish_weight && { dish_weight }),
+         ...(composition && { composition }),
+         ...(categoryid && { categoryid: parseInt(categoryid) }),
+         ...(parsedDishStatus !== undefined && { dish_status: parsedDishStatus })
       }
       
       if (imagePath) {
          dish.image = imagePath
+      }
+
+      if (resize !== undefined) {
+         dish.resize = resize === 'true' || resize === '1' || resize === true;
+         if (!dish.resize && size) {
+            // Optionally reset size to empty if resize is false
+            size = '{}';
+         }
+      }
+
+      if (size) {
+         try {
+            dish.size = JSON.parse(size);
+         } catch (e) {
+            throwValidationError('Неверный формат JSON для size');
+         }
       }
       
       return await safeDbCall(() => dishes.update(id, dish))

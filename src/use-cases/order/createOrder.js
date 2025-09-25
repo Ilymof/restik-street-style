@@ -3,8 +3,7 @@ const errorHandler = require('../../lib/errorHandler');
 const db = require('../../db');
 const orders = db('orders');
 const dishes = db('dish');
-const categories = db('category')
-const throwValidationError = require('../../lib/ValidationError')
+const throwValidationError = require('../../lib/ValidationError');
 const safeDbCall = require('../../lib/safeDbCall');
 
 const validateRequiredFields = (args, requiredFields) => {
@@ -19,93 +18,90 @@ const validateRequiredFields = (args, requiredFields) => {
   }
 };
 
-const getSizeAdjustment = (pizzaSize) => {
-  return pizzaSize === '40' ? 100 : 0; 
-};
-
-const isPizzaCategory = (categoryName) => {
-  return categoryName.toLowerCase() === 'пицца';  
-};
-
-const validatePizzaSize = (pizzaSize) => {
-  if (!pizzaSize) return;  
-
-  const size = pizzaSize.toString().trim(); 
-
-  if (!['30', '40'].includes(size)) {
-    throwValidationError(`Размер пиццы должен быть "30" или "40" (получено: ${pizzaSize})`);
+const validateSizeForDish = (inputSize, dish) => {
+  if (!inputSize) {
+    return null;
   }
+
+  const size = inputSize.toString().trim();
+
+  // Проверяем, поддерживается ли размер в JSONB
+  if (!dish.size || typeof dish.size !== 'object' || !(size in dish.size)) {
+    const availableSizes = Object.keys(dish.size || {}).join(', ') || 'нет доступных';
+    throwValidationError(`Неверный размер для блюда "${dish.name}". Доступные: ${availableSizes}`);
+  }
+
   return size;
 };
 
 const createOrder = async (args) => {
-      const requiredFields = ['phone', 'delivery_address'];
+  const requiredFields = ['phone', 'delivery_address'];
 
-      validateRequiredFields(args, requiredFields);
+  validateRequiredFields(args, requiredFields);
 
-      const orderedDishes = [];
-      let totalPrice = 0;
+  const orderedDishes = [];
+  let totalPrice = 0;
 
-      for (const oneDish of args.dishes) {
-         const { dishId, quantity, pizza_size } = oneDish;
+  for (const oneDish of args.dishes) {
+    const { dishId, quantity, size: inputSize } = oneDish;
 
-         const dishIdNum = parseInt(dishId);
-         const quantityNum = parseInt(quantity);
-         if (isNaN(dishIdNum) || isNaN(quantityNum) || quantityNum <= 0) {
-            throwValidationError(`Неверные данные для блюда: dishId=${dishId}, quantity=${quantity}`);
-         }
+    const dishIdNum = parseInt(dishId);
+    const quantityNum = parseInt(quantity);
+    if (isNaN(dishIdNum) || isNaN(quantityNum) || quantityNum <= 0) {
+      throwValidationError(`Неверные данные для блюда: dishId=${dishId}, quantity=${quantity}`);
+    }
 
-         const dish = await safeDbCall(() => dishes.read(dishIdNum));
-         if (dish.length < 1) {
-            throwValidationError(`Блюдо с id ${dishIdNum} не найдено`);
-         }
+    const dish = await safeDbCall(() => dishes.read(dishIdNum));
+    if (dish.length < 1) {
+      throwValidationError(`Блюдо с id ${dishIdNum} не найдено`);
+    }
 
-         const dish_category = await safeDbCall(() => categories.read(dish[0].categoryid));
+    const currentDish = dish[0];
+     console.log(currentDish.size);
 
-         if (isPizzaCategory(dish_category[0].name) && !pizza_size) {
-         throwValidationError('У пиццы не указан размер');
-         }
+    // Проверяем поддержку размеров
+    if (currentDish.resize && !inputSize) {
+      throwValidationError(`Для блюда "${currentDish.name}" требуется указать размер`);
+    }
 
-         const validatedSize = validatePizzaSize(pizza_size);
+    if (!currentDish.resize && inputSize) {
+      throwValidationError(`Размер не поддерживается для блюда "${currentDish.name}"`);
+    }
 
-         if (validatedSize && !isPizzaCategory(dish_category[0].name)) {  
-         throwValidationError(`Размер пиццы указан не для пиццы (dish_name: ${dish[0].name})`);
-         }
-         
-         let sizeAdjustment = 0;
+    const validatedSize = currentDish.resize ? validateSizeForDish(inputSize, currentDish) : null;
 
-         if (isPizzaCategory(dish_category[0].name) && validatedSize) {
-            sizeAdjustment  = getSizeAdjustment(validatedSize);
-         }
+    let multiplier = 1.0;
+    if (validatedSize && currentDish.size && validatedSize in currentDish.size) {
+      multiplier = currentDish.size[validatedSize];  // Извлекаем из JSONB
+    }
 
-         let dishPrice = (dish[0].price + sizeAdjustment) * quantityNum;
+    let dishPrice = Math.round(currentDish.price * multiplier * quantityNum);
 
-         orderedDishes.push({
-            dishId: dishIdNum,
-            quantity: quantityNum,
-            price: dishPrice,
-            dishName: dish[0].name,
-            ...(validatedSize && { size: validatedSize }) 
-         });
+    orderedDishes.push({
+      dishId: dishIdNum,
+      quantity: quantityNum,
+      price: dishPrice,
+      dishName: currentDish.name,
+      ...(validatedSize && { size: validatedSize }) 
+    });
 
-         totalPrice += dishPrice;
-      }
+    totalPrice += dishPrice;
+  }
 
-      const order = {
-         phone: args.phone,
-         delivery_address: args.delivery_address,
-         dishes: JSON.stringify(orderedDishes),
-         total_price:  totalPrice,
-         status: false,
-         delivery: args.delivery,
-      };
+  const order = {
+    phone: args.phone,
+    delivery_address: args.delivery_address,
+    dishes: JSON.stringify(orderedDishes),
+    total_price: totalPrice,
+    status: false,
+    delivery: args.delivery,
+  };
 
-      const result = await safeDbCall(() => orders.create(order));
-      if (!result) {
-         throwValidationError('Ошибка при создании заказа');
-      }
-      return result
-  
+  const result = await safeDbCall(() => orders.create(order));
+  if (!result) {
+    throwValidationError('Ошибка при создании заказа');
+  }
+  return result;
 };
 
 module.exports = createOrder;

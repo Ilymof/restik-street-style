@@ -30,8 +30,8 @@ const updateDish = async (rawBody) => {
                     try {
                        await fs.access(filePath)
                        await fs.unlink(filePath)
-                    } catch (err) {
-                       throwValidationError('Ошибка при удалении фото')
+                    } catch () {
+                      console.log('Фото нет')
                     }
                  }
       }

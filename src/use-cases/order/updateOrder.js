@@ -85,10 +85,10 @@ const updateOrder = async (args) => {
     let dishPrice = Math.round(currentDish.price * multiplier * quantityNum);
 
     orderedDishes.push({
-      dishId: dishIdNum,
+      id: dishIdNum,
       quantity: quantityNum,
       price: dishPrice,
-      dishName: currentDish.name,
+      name: currentDish.name,
       ...(validatedSize && { size: validatedSize }) 
     });
 

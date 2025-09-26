@@ -20,7 +20,7 @@ const updateDish = async (rawBody) => {
       const existing_dish = await safeDbCall(() => dishes.read(id))
     
       if(existing_dish.length < 1){
-        throw  new Error(`Нет блюда с id: ${id}`)
+        throwValidationError(`Нет блюда с id: ${id}`)
       }
       
       if (imagePath){

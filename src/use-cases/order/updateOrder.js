@@ -8,8 +8,9 @@ const throwValidationError = require('../../lib/ValidationError');
 const safeDbCall = require('../../lib/safeDbCall');
 
 const validateRequiredFields = (args, requiredFields) => {
+  
   for (const field of requiredFields) {
-    if (!args[field] || args[field].trim() === '') {
+    if (!args[field]) {
       throwValidationError(`Поле ${field} отсутствует`);
     }
   }
@@ -17,6 +18,8 @@ const validateRequiredFields = (args, requiredFields) => {
   if (!Array.isArray(args.dishes) || args.dishes.length === 0) {
     throwValidationError('Dishes должен быть непустым массивом');
   }
+  
+
 };
 
 const validateSizeForDish = (inputSize, dish) => {
@@ -35,9 +38,13 @@ const validateSizeForDish = (inputSize, dish) => {
   return size;
 };
 
-const createOrder = async (args) => {
-  const requiredFields = ['phone', 'delivery_address'];
-
+const updateOrder = async (args) => {
+  const requiredFields = ['id','phone', 'name','cutlery_status', 'cutlery_quantity'];
+  const exsistOrder = await safeDbCall(() => orders.read(args.id));
+    
+  if(exsistOrder.length < 1){
+    throwValidationError(`Нет заказа с id: ${args.id}`)
+  }
   validateRequiredFields(args, requiredFields);
 
   const orderedDishes = [];
@@ -72,7 +79,7 @@ const createOrder = async (args) => {
 
     let multiplier = 1.0;
     if (validatedSize && currentDish.size && validatedSize in currentDish.size) {
-      multiplier = currentDish.size[validatedSize];  // Извлекаем из JSONB
+      multiplier = currentDish.size[validatedSize];
     }
 
     let dishPrice = Math.round(currentDish.price * multiplier * quantityNum);
@@ -87,21 +94,31 @@ const createOrder = async (args) => {
 
     totalPrice += dishPrice;
   }
+  const {
+    status = true,   
+    address = '',  
+    comment = ''  
+    } = args.delivery || {}
 
+  const deliveryObj = { status, address, comment }
+
+  const cutlery_price = 50
   const order = {
     phone: args.phone,
-    delivery_address: args.delivery_address,
     dishes: JSON.stringify(orderedDishes),
-    total_price: totalPrice,
+    total_price: args.cutlery_quantity ? totalPrice+ cutlery_price*args.cutlery_quantity : totalPrice,
     status: false,
-    delivery: args.delivery,
+    delivery: JSON.stringify(deliveryObj),
+    cutlery_status: args.cutlery_status,
+    cutlery_quantity: args.cutlery_quantity,
+    order_comment: args.order_comment ? args.order_comment : '',
   };
 
-  const result = await safeDbCall(() => orders.create(order));
+  const result = await safeDbCall(() => orders.update(args.id,order));
   if (!result) {
     throwValidationError('Ошибка при создании заказа');
   }
   return result;
 };
 
-module.exports = createOrder;
+module.exports = updateOrder;

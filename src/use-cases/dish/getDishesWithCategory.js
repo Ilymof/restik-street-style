@@ -69,6 +69,7 @@ const getDishesByCategory = async () => {
                dish_status,
                composition,
                dish_weight,
+               quantity:1,
                image,
                categoryid
             };

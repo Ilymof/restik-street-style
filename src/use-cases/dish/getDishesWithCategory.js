@@ -68,11 +68,10 @@ const getDishesByCategory = async () => {
                dish_weight,
                quantity:1,
                image,
-               categoryid
+               categoryid,
+               resize,
+               size
             };
-            if (resize && size && typeof size === 'object') {
-               dishObj.size = Object.keys(size);
-            }
             category.dishes.push(dishObj);
          }
 

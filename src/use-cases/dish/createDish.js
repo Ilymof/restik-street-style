@@ -25,11 +25,10 @@ const createDish = async (rawBody) => {
                }
             }
 
-      let {name, price ,description ,dish_weight , composition, categoryid, dish_status, resize, size} = fields
+      let {name,description ,dish_weight , composition, categoryid, dish_status, resize, size} = fields
       
       const dish = {
          ...(name && { name }), 
-         ...(price && { price: parseInt(price) }),
          ...(description !== undefined && { description }),
          ...(dish_weight && { dish_weight }),
          ...(composition && { composition }),

@@ -44,9 +44,9 @@ const createOrder = async (args) => {
   let totalPrice = 0
 
   for (const oneDish of args.dishes) {
-    const { dishId, quantity, size: inputSize } = oneDish
+    const { id, quantity, size: inputSize } = oneDish
 
-    const dishIdNum = parseInt(dishId)
+    const dishIdNum = parseInt(id)
     const quantityNum = parseInt(quantity)
     if (isNaN(dishIdNum) || isNaN(quantityNum) || quantityNum <= 0) {
       throwValidationError(`Неверные данные для блюда: dishId=${dishId}, quantity=${quantity}`)
@@ -71,12 +71,12 @@ const createOrder = async (args) => {
 
     const validatedSize = currentDish.resize ? validateSizeForDish(inputSize, currentDish) : null
 
-    let multiplier = 1.0
+    let sizePrice = 0
     if (validatedSize && currentDish.size && validatedSize in currentDish.size) {
-      multiplier = currentDish.size[validatedSize]  // Извлекаем из JSONB
+      sizePrice = currentDish.size[validatedSize]  // Извлекаем из JSONB
     }
 
-    let dishPrice = Math.round(currentDish.price * multiplier * quantityNum)
+    let dishPrice = Math.round(sizePrice * quantityNum)
 
     orderedDishes.push({
       id: dishIdNum,

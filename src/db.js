@@ -1,6 +1,7 @@
 'use strict'
 
 const pool = require('./poolDB.js')
+const throwValidationError = require('./lib/ValidationError.js')
 
 module.exports = (table) => ({
    async query(sql, args) {

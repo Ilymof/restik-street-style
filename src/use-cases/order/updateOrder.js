@@ -77,12 +77,12 @@ const updateOrder = async (args) => {
 
     const validatedSize = currentDish.resize ? validateSizeForDish(inputSize, currentDish) : null;
 
-    let multiplier = 1.0;
+    let sizePrice = 0
     if (validatedSize && currentDish.size && validatedSize in currentDish.size) {
-      multiplier = currentDish.size[validatedSize];
+      sizePrice = currentDish.size[validatedSize]
     }
 
-    let dishPrice = Math.round(currentDish.price * multiplier * quantityNum);
+    let dishPrice = Math.round(sizePrice * quantityNum)
 
     orderedDishes.push({
       id: dishIdNum,

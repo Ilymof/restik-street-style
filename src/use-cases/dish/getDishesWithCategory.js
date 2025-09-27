@@ -10,7 +10,6 @@ const getDishesByCategory = async () => {
             c.name AS category_name,
             d.id AS dish_id,
             d.name AS dish_name,
-            d.price,
             d.description,
             d.dish_status,
             d.dish_weight,

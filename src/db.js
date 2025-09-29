@@ -13,12 +13,18 @@ module.exports = (table) => ({
    },
 
    async read(id, fields = ['*']) {
-      const names = fields.join(', ')
-      const sql = `SELECT ${names} FROM ${table}`
-      const result = id
-         ? await pool.query(`${sql} WHERE id = $1`, [id])
-         : await pool.query(sql)
-      return result.rows
+        const names = fields.join(', ');
+    let sql = `SELECT ${names} FROM ${table}`;
+
+    if (id) {
+        sql += ` WHERE id = $1`;
+        const result = await pool.query(sql, [id]);
+        return result.rows;
+    } else {
+        sql += ` ORDER BY id ASC`;
+        const result = await pool.query(sql);
+        return result.rows;
+    }
    },
 
    async create(record) {

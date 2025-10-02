@@ -15,7 +15,7 @@ const updateDish = async (rawBody) => {
       const imageFile = files.find(f => f.name === 'image') 
       const imagePath = imageFile ? imageFile.filename : null
       
-      let {id, name, description, dish_weight, composition, categoryid, dish_status, resize, size} = fields
+      let {id, name, description, composition, categoryid, dish_status, resize, size} = fields
 
       const existing_dish = await safeDbCall(() => dishes.read(id))
     
@@ -51,7 +51,6 @@ const updateDish = async (rawBody) => {
       const dish = {   
          ...(name && { name }), 
          ...(description !== undefined && { description }),
-         ...(dish_weight && { dish_weight }),
          ...(composition && { composition }),
          ...(categoryid && { categoryid: parseInt(categoryid) }),
          ...(parsedDishStatus !== undefined && { dish_status: parsedDishStatus }),
@@ -61,22 +60,6 @@ const updateDish = async (rawBody) => {
       
       if (imagePath) {
          dish.image = imagePath
-      }
-
-      if (resize !== undefined) {
-         dish.resize = resize === 'true' || resize === '1' || resize === true;
-         if (!dish.resize && size) {
-            // Optionally reset size to empty if resize is false
-            size = '{}';
-         }
-      }
-
-      if (size) {
-         try {
-            dish.size = JSON.parse(size);
-         } catch (e) {
-            throwValidationError('Неверный формат JSON для size');
-         }
       }
       
       return await safeDbCall(() => dishes.update(id, dish))

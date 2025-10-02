@@ -25,12 +25,11 @@ const createDish = async (rawBody) => {
                }
             }
 
-      let {name,description ,dish_weight , composition, categoryid, dish_status, default_characteristics, characteristics} = fields
+      let {name,description  , composition, categoryid, dish_status, default_characteristics, characteristics} = fields
       
       const dish = {
          ...(name && { name }), 
          ...(description !== undefined && { description }),
-         ...(dish_weight && { dish_weight }),
          ...(composition && { composition }),
          ...(categoryid && { categoryid: parseInt(categoryid) }),
          ...(imagePath && { image: imagePath }),

@@ -25,7 +25,7 @@ const createDish = async (rawBody) => {
                }
             }
 
-      let {name,description ,dish_weight , composition, categoryid, dish_status, resize, size} = fields
+      let {name,description ,dish_weight , composition, categoryid, dish_status, default_characteristics, characteristics} = fields
       
       const dish = {
          ...(name && { name }), 
@@ -34,26 +34,10 @@ const createDish = async (rawBody) => {
          ...(composition && { composition }),
          ...(categoryid && { categoryid: parseInt(categoryid) }),
          ...(imagePath && { image: imagePath }),
-         ...(dish_status !== undefined && { dish_status: dish_status === '1' || dish_status === 'true' || dish_status === true })
+         ...(dish_status !== undefined && { dish_status: dish_status === '1' || dish_status === 'true' || dish_status === true }),
+         ...(default_characteristics && {default_characteristics}),
+         ...(characteristics && {characteristics})
       }
-
-      if (resize !== undefined) {
-         dish.resize = resize === 'true' || resize === '1' || resize === true;
-         if (!dish.resize && size) {
-            // Optionally reset size to empty if resize is false
-            size = '{}';
-         }
-      }
-
-      if (size) {
-         try {
-            dish.size = JSON.parse(size);
-         } catch (e) {
-            throwValidationError('Неверный формат JSON для size');
-         }
-      }
-
-      console.log(dish);
 
       return (await safeDbCall(() => dishes.create(dish)))
 }

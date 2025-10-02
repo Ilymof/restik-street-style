@@ -54,7 +54,9 @@ const updateDish = async (rawBody) => {
          ...(dish_weight && { dish_weight }),
          ...(composition && { composition }),
          ...(categoryid && { categoryid: parseInt(categoryid) }),
-         ...(parsedDishStatus !== undefined && { dish_status: parsedDishStatus })
+         ...(parsedDishStatus !== undefined && { dish_status: parsedDishStatus }),
+         ...(default_characteristics && {default_characteristics}),
+         ...(characteristics && {characteristics})
       }
       
       if (imagePath) {

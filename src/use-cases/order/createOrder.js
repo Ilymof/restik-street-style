@@ -25,9 +25,10 @@ const validateSizeForDish = (inputSize, dish) => {
 
   const size = inputSize.toString().trim()
 
-  // Проверяем, поддерживается ли размер в JSONB
-  if (!dish.size || typeof dish.size !== 'object' || !(size in dish.size)) {
-    const availableSizes = Object.keys(dish.size || {}).join(', ') || 'нет доступных'
+  // Проверяем, поддерживается ли размер в characteristics
+  const char = dish.characteristics.find(c => c.size.toString().trim() === size)
+  if (!char) {
+    const availableSizes = dish.characteristics.map(c => c.size).join(', ') || 'нет доступных'
     throwValidationError(`Неверный размер для блюда "${dish.name}". Доступные: ${availableSizes}`)
   }
 
@@ -58,22 +59,22 @@ const createOrder = async (args) => {
     }
 
     const currentDish = dish[0]
-     console.log(currentDish.size)
 
-    // Проверяем поддержку размеров
-    if (currentDish.resize && !inputSize) {
-      throwValidationError(`Для блюда "${currentDish.name}" требуется указать размер`)
-    }
+    const validatedSize = validateSizeForDish(inputSize, currentDish)
 
-    if (!currentDish.resize && inputSize) {
-      throwValidationError(`Размер не поддерживается для блюда "${currentDish.name}"`)
-    }
-
-    const validatedSize = currentDish.resize ? validateSizeForDish(inputSize, currentDish) : null
-
-    let sizePrice = 0
-    if (validatedSize && currentDish.size && validatedSize in currentDish.size) {
-      sizePrice = currentDish.size[validatedSize]  // Извлекаем из JSONB
+    let selectedSize, sizePrice
+    if (validatedSize) {
+      const char = currentDish.characteristics.find(c => c.size.toString().trim() === validatedSize)
+      selectedSize = validatedSize
+      sizePrice = parseInt(char.price)
+    } else {
+      const defaultIndex = parseInt(currentDish.default_characteristics)
+      if (isNaN(defaultIndex) || defaultIndex < 0 || defaultIndex >= currentDish.characteristics.length) {
+        throwValidationError(`Неверный default_characteristics для блюда "${currentDish.name}"`)
+      }
+      const char = currentDish.characteristics[defaultIndex]
+      selectedSize = char.size
+      sizePrice = parseInt(char.price)
     }
 
     let dishPrice = Math.round(sizePrice * quantityNum)
@@ -83,7 +84,7 @@ const createOrder = async (args) => {
       quantity: quantityNum,
       price: dishPrice,
       name: currentDish.name,
-      ...(validatedSize && { size: validatedSize }) 
+      size: selectedSize
     })
 
     totalPrice += dishPrice

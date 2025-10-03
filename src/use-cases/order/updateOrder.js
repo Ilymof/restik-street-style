@@ -1,122 +1,124 @@
 'use strict';
-const errorHandler = require('../../lib/errorHandler');
 const db = require('../../db');
 const orders = db('orders');
 const dishes = db('dish');
-const categories = db('category');
 const throwValidationError = require('../../lib/ValidationError');
 const safeDbCall = require('../../lib/safeDbCall');
 
-const validateRequiredFields = (args, requiredFields) => {
-  
-  for (const field of requiredFields) {
-    if (!args[field]) {
-      throwValidationError(`Поле ${field} отсутствует`);
-    }
-  }
-  
-  if (!Array.isArray(args.dishes) || args.dishes.length === 0) {
-    throwValidationError('Dishes должен быть непустым массивом');
-  }
-  
-
-};
-
 const validateSizeForDish = (inputSize, dish) => {
-  if (!inputSize) {
-    return null;
-  }
-
+  if (!inputSize) return null;
   const size = inputSize.toString().trim();
-
-  // Проверяем, поддерживается ли размер в JSONB
-  if (!dish.size || typeof dish.size !== 'object' || !(size in dish.size)) {
-    const availableSizes = Object.keys(dish.size || {}).join(', ') || 'нет доступных';
+  const char = dish.characteristics.find(c => c.size.toString().trim() === size);
+  if (!char) {
+    const availableSizes = dish.characteristics.map(c => c.size).join(', ') || 'нет доступных';
     throwValidationError(`Неверный размер для блюда "${dish.name}". Доступные: ${availableSizes}`);
   }
-
   return size;
 };
 
 const updateOrder = async (args) => {
-  const requiredFields = ['id','phone', 'name','cutlery_status', 'cutlery_quantity'];
+  if (!args.id) {
+    throwValidationError('Поле id отсутствует');
+  }
+
   const exsistOrder = await safeDbCall(() => orders.read(args.id));
-    
-  if(exsistOrder.length < 1){
-    throwValidationError(`Нет заказа с id: ${args.id}`)
+  if (exsistOrder.length < 1) {
+    throwValidationError(`Нет заказа с id: ${args.id}`);
   }
-  validateRequiredFields(args, requiredFields);
+  const existingOrder = exsistOrder[0];
 
-  const orderedDishes = [];
-  let totalPrice = 0;
+  const updateObj = {};
+  let needsRecalc = false;
+  let baseTotalPrice = 0;
+  let orderedDishes = [];
 
-  for (const oneDish of args.dishes) {
-    const { dishId, quantity, size: inputSize } = oneDish;
+  // Перебор args
+  for (const [key, value] of Object.entries(args)) {
+    if (key === 'id') continue;
 
-    const dishIdNum = parseInt(dishId);
-    const quantityNum = parseInt(quantity);
-    if (isNaN(dishIdNum) || isNaN(quantityNum) || quantityNum <= 0) {
-      throwValidationError(`Неверные данные для блюда: dishId=${dishId}, quantity=${quantity}`);
+    if (key === 'delivery') {
+      const { status = true, address = '', comment = '' } = value;
+      updateObj.delivery = JSON.stringify({ status, address, comment });
+    } else if (key === 'dishes') {
+      if (!Array.isArray(value) || value.length === 0) {
+        throwValidationError('Dishes должен быть непустым массивом');
+      }
+      needsRecalc = true;
+
+      for (const oneDish of value) {
+        const { id, quantity, size: inputSize } = oneDish;
+        const dishIdNum = parseInt(id);
+        const quantityNum = parseInt(quantity);
+        if (isNaN(dishIdNum) || isNaN(quantityNum) || quantityNum <= 0) {
+          throwValidationError(`Неверные данные для блюда: id=${id}, quantity=${quantity}`);
+        }
+
+        const dish = await safeDbCall(() => dishes.read(dishIdNum));
+        if (dish.length < 1) {
+          throwValidationError(`Блюдо с id ${dishIdNum} не найдено`);
+        }
+        const currentDish = dish[0];
+
+        const validatedSize = validateSizeForDish(inputSize, currentDish);
+        let selectedSize, sizePrice;
+        if (validatedSize) {
+          const char = currentDish.characteristics.find(c => c.size.toString().trim() === validatedSize);
+          selectedSize = validatedSize;
+          sizePrice = parseInt(char.price);
+        } else {
+          const defaultIndex = parseInt(currentDish.default_characteristics);
+          if (isNaN(defaultIndex) || defaultIndex < 0 || defaultIndex >= currentDish.characteristics.length) {
+            throwValidationError(`Неверный default_characteristics для блюда "${currentDish.name}"`);
+          }
+          const char = currentDish.characteristics[defaultIndex];
+          selectedSize = char.size;
+          sizePrice = parseInt(char.price);
+        }
+
+        const dishPrice = Math.round(sizePrice * quantityNum);
+        orderedDishes.push({
+          id: dishIdNum,
+          quantity: quantityNum,
+          price: dishPrice,
+          name: currentDish.name,
+          size: selectedSize
+        });
+        baseTotalPrice += dishPrice;
+      }
+      updateObj.dishes = JSON.stringify(orderedDishes);
+    } else if (key === 'cutlery_quantity') {
+      const parsedQty = parseInt(value);
+      if (!isNaN(parsedQty)) {
+        updateObj.cutlery_quantity = parsedQty;
+        needsRecalc = true;
+      }
+    } else if (value != null) {
+      updateObj[key] = value;
     }
-
-    const dish = await safeDbCall(() => dishes.read(dishIdNum));
-    if (dish.length < 1) {
-      throwValidationError(`Блюдо с id ${dishIdNum} не найдено`);
-    }
-
-    const currentDish = dish[0];
-
-    // Проверяем поддержку размеров
-    if (currentDish.resize && !inputSize) {
-      throwValidationError(`Для блюда "${currentDish.name}" требуется указать размер`);
-    }
-
-    if (!currentDish.resize && inputSize) {
-      throwValidationError(`Размер не поддерживается для блюда "${currentDish.name}"`);
-    }
-
-    const validatedSize = currentDish.resize ? validateSizeForDish(inputSize, currentDish) : null;
-
-    let sizePrice = 0
-    if (validatedSize && currentDish.size && validatedSize in currentDish.size) {
-      sizePrice = currentDish.size[validatedSize]
-    }
-
-    let dishPrice = Math.round(sizePrice * quantityNum)
-
-    orderedDishes.push({
-      id: dishIdNum,
-      quantity: quantityNum,
-      price: dishPrice,
-      name: currentDish.name,
-      ...(validatedSize && { size: validatedSize }) 
-    });
-
-    totalPrice += dishPrice;
   }
-  const {
-    status = true,   
-    address = '',  
-    comment = ''  
-    } = args.delivery || {}
 
-  const deliveryObj = { status, address, comment }
+  // Перерасчёт total_price если нужно
+  if (needsRecalc) {
+    const cutlery_price = 50;
+    let cutleryQty = existingOrder.cutlery_quantity || 0;
+    if (updateObj.cutlery_quantity !== undefined) {
+      cutleryQty = updateObj.cutlery_quantity;
+    }
 
-  const cutlery_price = 50
-  const order = {
-    phone: args.phone,
-    dishes: JSON.stringify(orderedDishes),
-    total_price: args.cutlery_quantity ? totalPrice+ cutlery_price*args.cutlery_quantity : totalPrice,
-    status: false,
-    delivery: JSON.stringify(deliveryObj),
-    cutlery_status: args.cutlery_status,
-    cutlery_quantity: args.cutlery_quantity,
-    order_comment: args.order_comment ? args.order_comment : '',
-  };
+    let totalPrice;
+    if (orderedDishes.length > 0) {
+      totalPrice = baseTotalPrice + (cutleryQty * cutlery_price);
+    } else {
+      const existingDishes = JSON.parse(existingOrder.dishes || '[]');
+      const existingBaseTotal = existingDishes.reduce((sum, d) => sum + d.price, 0);
+      totalPrice = existingBaseTotal + (cutleryQty * cutlery_price);
+    }
+    updateObj.total_price = totalPrice;
+  }
 
-  const result = await safeDbCall(() => orders.update(args.id,order));
+  const result = await safeDbCall(() => orders.update(args.id, updateObj));
   if (!result) {
-    throwValidationError('Ошибка при создании заказа');
+    throwValidationError('Ошибка при обновлении заказа');
   }
   return result;
 };

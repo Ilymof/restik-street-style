@@ -5,10 +5,9 @@ const orders = db('orders');
 const safeDbCall = require('../lib/safeDbCall.js');
 const createOrder = require('../use-cases/order/createOrder.js');
 const updateOrder = require('../use-cases/order/updateOrder.js');
-const { CreateOrderSchema, UpdateOrderSchema } = require('../shemas/orderShema.js');
+const { CreateOrderSchema, UpdateOrderSchema} = require('../shemas/orderMetaSchema.js');
 const errorHandler = require('../lib/errorHandler');
 const throwValidationError = require('../lib/ValidationError');
-const formatZodError = require('../lib/formatZodError');
 
 module.exports = {
   'read-all': async () => await safeDbCall(() => orders.read()),
@@ -21,28 +20,17 @@ module.exports = {
   },
 
   create: async (rawBody) => {
-    try {
-      const args = CreateOrderSchema.parse(rawBody);
-      return await createOrder(args);
-    } catch (error) {
-      if (error.name === 'ZodError') {
-        const formatted = formatZodError(error);
-        throw errorHandler( throwValidationError(formatted));
-      }
-      throw error;
-    }
+    if (!CreateOrderSchema.check(rawBody).valid){
+      throw errorHandler(throwValidationError(CreateOrderSchema.check(rawBody).errors[0]))
+    }   
+    return await createOrder(rawBody);
   },
 
+
   update: async (rawBody) => {
-    try {
-      const args = UpdateOrderSchema.parse(rawBody);
-      return await updateOrder(args);
-    } catch (error) {
-      if (error.name === 'ZodError') {
-        const formatted = formatZodError(error);
-        throw errorHandler( throwValidationError(formatted));
-      }
-      throw error;
-    }
-  },
+    if (!UpdateOrderSchema.check(rawBody).valid){
+      throw errorHandler(throwValidationError(UpdateOrderSchema.check(rawBody).errors[0]))
+    }   
+    return await updateOrder(rawBody);
+  }
 };

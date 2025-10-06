@@ -90,9 +90,9 @@ const createOrder = async (args) => {
     totalPrice += dishPrice
   }
     const {
-    status = true,   
-    address = '',  
-    comment = ''  
+    status,   
+    address,  
+    comment = ''
     } = args.delivery || {}
 
   const deliveryObj = { status, address, comment }

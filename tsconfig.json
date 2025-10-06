@@ -1,11 +1,12 @@
 {
-   "compilerOptions": {
+  "compilerOptions": {
       "allowJs": true,
       "noEmit": true
    },
    "include": [
       "src/**/*.js",
       "src/**/*.d.ts",
-      "src/use-cases/user/auth/loginUser.useCase.сjs"
+      "src/use-cases/order/createOrder.js",
+      "src/use-cases/order/updateOrder.js"
    ]
 }

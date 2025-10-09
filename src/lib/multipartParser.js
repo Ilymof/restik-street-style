@@ -4,7 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { Buffer } = require('buffer');
 
-const uploadDir = path.join(__dirname, '../../Uploads');
+const uploadDir = path.join(__dirname, '../../uploads');
 
 if (!fs.existsSync(uploadDir)) {
    fs.mkdirSync(uploadDir, { recursive: true });
@@ -67,8 +67,6 @@ async function processMultipart(body, boundary) {
          fields[key] = fields[key][0];
       }
    }
-
-   console.log('Processed files:', files);
    return { fields, files };
 }
 

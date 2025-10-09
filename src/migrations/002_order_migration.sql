@@ -9,7 +9,7 @@ CREATE TABLE orders (
     status BOOLEAN DEFAULT FALSE,
     delivery JSONB NOT NULL,
     cutlery_status BOOLEAN DEFAULT TRUE,
-    cutlery_quantity INTEGER,
+    cutlery_quantity INTEGER DEFAULT 0,
     order_comment TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

@@ -106,7 +106,7 @@ const createOrder = async (args) => {
     status: false,
     delivery: JSON.stringify(deliveryObj),
     cutlery_status: args.cutlery_status,
-    cutlery_quantity: args.number_cutlery,
+    cutlery_quantity: args.cutlery_quantity,
     order_comment: args.order_comment ? args.order_comment : '',
   }
 

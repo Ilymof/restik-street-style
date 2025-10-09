@@ -5,7 +5,7 @@ const orders = db('orders');
 const safeDbCall = require('../lib/safeDbCall.js');
 const createOrder = require('../use-cases/order/createOrder.js');
 const updateOrder = require('../use-cases/order/updateOrder.js');
-const { CreateOrderSchema, UpdateOrderSchema} = require('../shemas/orderMetaSchema.js');
+const { CreateOrderSchema, UpdateOrderSchema} = require('../schemas/orderMetaSchema.js');
 const errorHandler = require('../lib/errorHandler');
 const throwValidationError = require('../lib/ValidationError');
 

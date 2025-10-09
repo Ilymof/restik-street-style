@@ -5,6 +5,7 @@ const dishes = db('dish')
 const safeDbCall = require('../../lib/safeDbCall')
 const { promises: fs } = require('fs')
 const path = require('path')
+const {CreateDishesSchema} = require('../../schemas/dishesMetaSchema')
 
 const createDish = async (rawBody) => {
       const boundary = rawBody.headers['content-type'].split('boundary=')[1]
@@ -14,6 +15,43 @@ const createDish = async (rawBody) => {
 
       const imageFile = files.find(f => f.name === 'image') 
       const imagePath = imageFile ? imageFile.filename : null
+      
+      let {name, description, composition, categoryid, dish_status, default_characteristics, characteristics} = fields  
+
+      if (characteristics && typeof characteristics === 'string') {
+         try {
+            characteristics = JSON.parse(characteristics);
+
+            if (Array.isArray(characteristics)) {
+               characteristics = characteristics.map(char => ({
+                  size: char.size,
+                  price: char.price,  
+                  weight: char.weight, 
+                  measure: char.measure
+               }));
+            }
+         } catch (e) {
+            throwValidationError(`Неверный JSON в characteristics: ${e.message}`);
+         }
+      }
+      
+      const dish = {
+         name, 
+         description,
+         composition,
+         categoryid: parseInt(categoryid),
+         image: imagePath ,
+         dish_status: true,
+         default_characteristics: parseInt(default_characteristics),
+         characteristics
+      }
+      
+      if(!CreateDishesSchema.check(dish).valid){
+         throwValidationError(CreateDishesSchema.check(dish).errors[0])
+      }
+
+      dish.characteristics = JSON.stringify(characteristics)
+      const result = (await safeDbCall(() => dishes.create(dish)))
 
       if (imageFile) {
                const FilePath = path.join(__dirname, '../../../uploads', imageFile.filename);
@@ -24,21 +62,7 @@ const createDish = async (rawBody) => {
                   throwValidationError('Ошибка при записи нового фото');
                }
             }
-
-      let {name,description  , composition, categoryid, dish_status, default_characteristics, characteristics} = fields
-      
-      const dish = {
-         ...(name && { name }), 
-         ...(description !== undefined && { description }),
-         ...(composition && { composition }),
-         ...(categoryid && { categoryid: parseInt(categoryid) }),
-         ...(imagePath && { image: imagePath }),
-         ...(dish_status !== undefined && { dish_status: dish_status === '1' || dish_status === 'true' || dish_status === true }),
-         ...(default_characteristics && {default_characteristics}),
-         ...(characteristics && {characteristics})
-      }
-
-      return (await safeDbCall(() => dishes.create(dish)))
+      return result
 }
 
 module.exports = createDish

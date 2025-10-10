@@ -16,7 +16,7 @@ const createDish = async (rawBody) => {
       const imageFile = files.find(f => f.name === 'image') 
       const imagePath = imageFile ? imageFile.filename : null
       
-      let {name, description, composition, categoryid, dish_status, default_characteristics, characteristics} = fields  
+      let {name, description, composition, categoryid, default_characteristics, characteristics} = fields  
 
       if (characteristics && typeof characteristics === 'string') {
          try {

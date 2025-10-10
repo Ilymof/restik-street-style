@@ -11,10 +11,11 @@ const CreateOrderSchema = Schema.from({
     dishes: {array: {id: 'number',quantity: 'number', size: '?string'} },
     cutlery_status: 'boolean',
     cutlery_quantity:'?number', 
-    order_comment: '?string' 
+    order_comment: '?string',
+    secreyKey: 'string'
 })
 const UpdateOrderSchema = Schema.from({
-    id: '?number',
+    id: 'number',
     name: '?string',
     phone: '?string',
     delivery: {

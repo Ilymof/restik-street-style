@@ -6,18 +6,6 @@ const dishes = db('dish')
 const throwValidationError = require('../../lib/ValidationError')
 const safeDbCall = require('../../lib/safeDbCall')
 
-const validateRequiredFields = (args, requiredFields) => {
-  for (const field of requiredFields) {
-    if (!args[field] || args[field].trim() === '') {
-      throwValidationError(`Поле ${field} отсутствует`)
-    }
-  }
-  
-  if (!Array.isArray(args.dishes) || args.dishes.length === 0) {
-    throwValidationError('Dishes должен быть непустым массивом')
-  }
-}
-
 const validateSizeForDish = (inputSize, dish) => {
   if (!inputSize) {
     return null
@@ -36,10 +24,6 @@ const validateSizeForDish = (inputSize, dish) => {
 }
 
 const createOrder = async (args) => {
-  const requiredFields = ['phone']
-
-  validateRequiredFields(args, requiredFields)
-
   const orderedDishes = []
 
   let totalPrice = 0
@@ -50,14 +34,14 @@ const createOrder = async (args) => {
     const dishIdNum = parseInt(id)
     const quantityNum = parseInt(quantity)
     if (isNaN(dishIdNum) || isNaN(quantityNum) || quantityNum <= 0) {
-      throwValidationError(`Неверные данные для блюда: dishId=${dishId}, quantity=${quantity}`)
+      throwValidationError(`Неверные данные для блюда: dishId=${id}, quantity=${quantity}`)
     }
 
     const dish = await safeDbCall(() => dishes.read(dishIdNum))
     if (dish.length < 1) {
       throwValidationError(`Блюдо с id ${dishIdNum} не найдено`)
     }
-
+    
     const currentDish = dish[0]
 
     const validatedSize = validateSizeForDish(inputSize, currentDish)
@@ -77,18 +61,21 @@ const createOrder = async (args) => {
       sizePrice = parseInt(char.price)
     }
 
-    let dishPrice = Math.round(sizePrice * quantityNum)
+    let dishPrice = sizePrice * quantityNum
 
     orderedDishes.push({
       id: dishIdNum,
       quantity: quantityNum,
       price: dishPrice,
       name: currentDish.name,
-      size: selectedSize
+      size: selectedSize,
+      image: dish[0].image
     })
 
     totalPrice += dishPrice
   }
+
+
     const {
     status,   
     address,  

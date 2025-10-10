@@ -75,13 +75,14 @@ const updateOrder = async (args) => {
           sizePrice = parseInt(char.price);
         }
 
-        const dishPrice = Math.round(sizePrice * quantityNum);
+        const dishPrice = sizePrice * quantityNum
         orderedDishes.push({
           id: dishIdNum,
           quantity: quantityNum,
           price: dishPrice,
           name: currentDish.name,
-          size: selectedSize
+          size: selectedSize,
+          image: dish[0].image
         });
         baseTotalPrice += dishPrice;
       }

@@ -86,32 +86,14 @@ const updateOrder = async (args) => {
         baseTotalPrice += dishPrice;
       }
       updateObj.dishes = JSON.stringify(orderedDishes);
-    } else if (key === 'cutlery_quantity') {
-      const parsedQty = parseInt(value);
-      if (!isNaN(parsedQty)) {
-        updateObj.cutlery_quantity = parsedQty;
-        needsRecalc = true;
-      }
-    } else if (value != null) {
-      updateObj[key] = value;
-    }
+    } 
   }
-
-  // Перерасчёт total_price если нужно
-  if (needsRecalc) {
-    const cutlery_price = 50;
-    let cutleryQty = existingOrder.cutlery_quantity || 0;
-    if (updateObj.cutlery_quantity !== undefined) {
-      cutleryQty = updateObj.cutlery_quantity;
-    }
 
     let totalPrice;
     if (orderedDishes.length > 0) {
-      totalPrice = baseTotalPrice + (cutleryQty * cutlery_price);
-    } else {
       const existingDishes = JSON.parse(existingOrder.dishes || '[]');
-      const existingBaseTotal = existingDishes.reduce((sum, d) => sum + d.price, 0);
-      totalPrice = existingBaseTotal + (cutleryQty * cutlery_price);
+      const NewTotalPrice = existingDishes.reduce((sum, d) => sum + d.price, 0);
+      totalPrice = NewTotalPrice ;
     }
     updateObj.total_price = totalPrice;
   }

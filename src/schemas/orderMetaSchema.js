@@ -11,11 +11,16 @@ const CreateOrderSchema = Schema.from({
     dishes: {array: {id: 'number',quantity: 'number', size: '?string'} },
     cutlery_status: 'boolean',
     cutlery_quantity:'?number', 
+<<<<<<< HEAD
     order_comment: '?string' ,
     secret_key: 'string'
+=======
+    order_comment: '?string',
+    secrey_key: 'string'
+>>>>>>> 87f4af85205caa85042efeb38e4631d4462b9efa
 })
 const UpdateOrderSchema = Schema.from({
-    id: '?number',
+    id: 'number',
     name: '?string',
     phone: '?string',
     delivery: {

@@ -97,12 +97,11 @@ const createOrder = async (args) => {
 
   const deliveryObj = { status, address, comment }
 
-  const cutlery_price = 50
   const order = {
     name: args.name,
     phone: args.phone,
     dishes: JSON.stringify(orderedDishes),
-    total_price:args.cutlery_quantity ? totalPrice + cutlery_price * args.cutlery_quantity : totalPrice,
+    total_price: totalPrice,
     status: false,
     delivery: JSON.stringify(deliveryObj),
     cutlery_status: args.cutlery_status,

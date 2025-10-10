@@ -107,6 +107,7 @@ const createOrder = async (args) => {
     cutlery_status: args.cutlery_status,
     cutlery_quantity: args.cutlery_quantity,
     order_comment: args.order_comment ? args.order_comment : '',
+    secret_key: args.secretKey
   }
 
   const result = await safeDbCall(() => orders.create(order))

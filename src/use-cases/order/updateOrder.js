@@ -96,8 +96,7 @@ const updateOrder = async (args) => {
       totalPrice = NewTotalPrice ;
     }
     updateObj.total_price = totalPrice;
-  }
-
+    
   const result = await safeDbCall(() => orders.update(args.id, updateObj));
   if (!result) {
     throwValidationError('Ошибка при обновлении заказа');

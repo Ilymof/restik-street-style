@@ -12,6 +12,7 @@ CREATE TABLE orders (
     cutlery_quantity INTEGER DEFAULT 0,
     order_comment TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    secret_key VARCHAR(255)
 );
 
 

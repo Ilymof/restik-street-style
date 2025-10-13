@@ -40,13 +40,11 @@ const TokenService = {
       if (!decoded) {
          throwValidationError('Invalid or expired refresh token')
       }
-      // Генерируем новый access-токен с тем же payload
+    
       const payload = {
-         sub: decoded.sub,
-         role: decoded.role,
-         is_blocked: decoded.isBlocked,
-         auth_provider: decoded.auth_provider,
-         provider_user_id: decoded.provider_user_id
+      admin_id: decoded.admin_id ,
+      username: decoded.username ,
+      role: decoded.role
       }
       const accessToken = jwt.sign(payload, JWT.accessSecret, {
          expiresIn: JWT.accessExpiresIn

@@ -29,10 +29,10 @@ async function login(args) {
     const admin_id = admin.rows[0].id;
     const role = admin.rows[0].role;
     const payload = { admin_id, username, role };
-    const tokens = await TokenService.generateTokens(payload);
+    const tokens = TokenService.generateTokens(payload);
     await TokenStorage.setToken(username, role, tokens.refreshToken);
 
-    return tokens;
+    return tokens.accessToken;
 
 }
 

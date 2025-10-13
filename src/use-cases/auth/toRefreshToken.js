@@ -1,22 +1,23 @@
 'use strict'
-const ValidationError = require('../../lib/ValidationError')
 const TokenService = require('../../services/auth/JWTService')
 const TokenStorage = require('../../storages/TokenStorage')
 const removeBearer = require('../../lib/removeBearer')
+const PermissionError = require('../../lib/PermissionError')
 const throwValidationError = require('../../lib/ValidationError')
+const jwt = require('jsonwebtoken')
 
-const toRefreshToken = async (refreshTokenData) => {
-      const refreshToken = refreshTokenData.refreshToken 
-      if (!refreshToken || typeof refreshToken !== 'string') {
-         throwValidationError('Refresh token must be a string')
+const toRefreshToken = async (accessTokenData) => {
+      const accessToken = accessTokenData.accessToken
+      if (!accessToken || typeof accessToken !== 'string') {
+         throwValidationError('Access token must be a string')
       }
-      const verifiedToken = TokenService.verifyRefreshToken(refreshToken)
-      if (!verifiedToken) {
-         throwValidationError('Invalid or expired refresh token')
+      const decodedAccessToken = jwt.decode(accessToken)
+      if (!decodedAccessToken) {
+         throwValidationError('Invalid access token')
       }
 
-      const storedToken = await TokenStorage.getByUsernameToken(verifiedToken.username, refreshToken)
-      if (!storedToken || storedToken !== refreshToken) {
+      const refreshToken = await TokenStorage.getByUsernameToken(decodedAccessToken.username)
+      if (!refreshToken || refreshToken !== refreshToken) {
          throwValidationError('Refresh token not found or mismatched')
       }
 
@@ -24,9 +25,9 @@ const toRefreshToken = async (refreshTokenData) => {
       return tokens
 
 }
-const check = async (queryParams,token) => {
+const check = async (queryParams,accessToken) => {
    
-   const clearToken = removeBearer(token)
+   const clearToken = removeBearer(accessToken)
    if (!clearToken) throw PermissionError.unauthorized()
    const decodedToken = TokenService.verifyAccessToken(clearToken)
    let is_alive = false

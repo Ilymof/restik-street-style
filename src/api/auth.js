@@ -17,16 +17,16 @@ module.exports = {
         return await loginAdmin(rawBody)
     },
 
-    async refresh(refreshToken) {
-        return await toRefreshToken(refreshToken)
+    async refresh(accessToken) {
+        return await toRefreshToken(accessToken)
     },
-      async 'token-check'(queryParams,accessToken)
-   {
-      return await check(queryParams,accessToken)
-   },
+    
+    async 'token-check'(queryParams,accessToken){
+        return await check(queryParams,accessToken)
+    },
 
    async logout(refreshToken) {
-         return await logout(refreshToken)
+        return await logout(refreshToken)
     },
 
 }

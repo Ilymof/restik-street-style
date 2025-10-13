@@ -35,15 +35,7 @@ const updateDish = async (rawBody) => {
                  }
       }
 
-      if (imageFile) {
-         const FilePath = path.join(__dirname, '../../../uploads', imageFile.filename);
-         try {
-            await fs.writeFile(FilePath, imageFile.data);
-            console.log('New file written:', FilePath);
-         } catch (err) {
-            throwValidationError('Ошибка при записи нового фото');
-         }
-      }
+      
       
       
       let parsedDishStatus = dish_status === '1' || dish_status === 'true' || dish_status === true;
@@ -62,7 +54,17 @@ const updateDish = async (rawBody) => {
          dish.image = imagePath
       }
       
-      return await safeDbCall(() => dishes.update(id, dish))
+     const result = await safeDbCall(() => dishes.update(id, dish))
+      if (imageFile) {
+         const FilePath = path.join(__dirname, '../../../uploads', imageFile.filename);
+         try {
+            await fs.writeFile(FilePath, imageFile.data);
+            console.log('New file written:', FilePath);
+         } catch (err) {
+            throwValidationError('Ошибка при записи нового фото');
+         }
+      }
+      return result
 }
 
 module.exports = updateDish

@@ -1,5 +1,4 @@
 'use strict'
-const errorHandler = require('../../lib/errorHandler')
 const db = require('../../db')
 const orders = db('orders')
 const dishes = db('dish')

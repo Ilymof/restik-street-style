@@ -12,13 +12,17 @@ const toRefreshToken = async (req, res) => {
          throwValidationError('Refresh token missing');
       }
       const verifiedToken = TokenService.verifyRefreshToken(refreshToken)
-      
+
       if(!verifiedToken){
          throwValidationError('Не правильный токен')
       }
 
-      const storedToken = 
-      
+      const storedToken = TokenStorage.getByUsernameToken(verifiedToken.username)
+
+      const comparedTokens = await bcrypt.compare(refreshToken, storedToken)
+      if(!comparedTokens){
+         throwValidationError('Токены не совпадают')
+      }
 
       res.cookie('refreshToken', tokens.refreshToken, {
          httpOnly: true,

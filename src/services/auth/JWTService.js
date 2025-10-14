@@ -5,7 +5,6 @@ const { JWT } = require('../../config')
 const throwValidationError = require('../../lib/ValidationError')
 
  
-
 const TokenService = {
    generateTokens(payload) {
       const accessToken = jwt.sign(payload, JWT.accessSecret, {
@@ -19,23 +18,6 @@ const TokenService = {
       return { accessToken, refreshToken }
    },
 
-   refreshAccessToken(refreshToken) {
-      const decoded = this.verifyRefreshToken(refreshToken)
-      if (!decoded) {
-         throwValidationError('Invalid or expired refresh token')
-      }
-    
-      const payload = {
-      admin_id: decoded.admin_id ,
-      username: decoded.username ,
-      role: decoded.role
-      }
-      const accessToken = jwt.sign(payload, JWT.accessSecret, {
-         expiresIn: JWT.accessExpiresIn
-      })
-      return { accessToken }
-   },
-   
    verifyRefreshToken(token) {
       try {
          return jwt.verify(token, JWT.refreshSecret)
@@ -43,7 +25,7 @@ const TokenService = {
          return null
       }
    },
-
+   
    verifyAccessToken(token){
       try {
          const verifiedToken = jwt.verify(token, JWT.accessSecret)
@@ -54,6 +36,22 @@ const TokenService = {
       }
    },
 
+   refreshAccessToken(refreshToken) {
+      const decoded = this.verifyRefreshToken(refreshToken)
+      if (!decoded) {
+         throwValidationError('Invalid or expired refresh token')
+      }
+    
+      const payload = {
+      admin_id: decoded.admin_id,
+      username: decoded.username,
+      role: decoded.role
+      }
+      const accessToken = jwt.sign(payload, JWT.accessSecret, {
+         expiresIn: JWT.accessExpiresIn
+      })
+      return { accessToken }
+   },
    
    logout(refreshToken) {
       const decoded = this.verifyRefreshToken(refreshToken)
@@ -64,4 +62,4 @@ const TokenService = {
    }
 }
 
-module.exports = {TokenService}
+module.exports = TokenService

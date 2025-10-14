@@ -6,23 +6,28 @@ const PermissionError = require('../../lib/PermissionError')
 const throwValidationError = require('../../lib/ValidationError')
 const jwt = require('jsonwebtoken')
 
-const toRefreshToken = async (accessTokenData) => {
-      const accessToken = accessTokenData.accessToken
-      if (!accessToken || typeof accessToken !== 'string') {
-         throwValidationError('Access token must be a string')
+const toRefreshToken = async (req, res) => {
+      const refreshToken = req.cookies.refreshToken; 
+      if (!refreshToken) {
+         throwValidationError('Refresh token missing');
       }
-      const decodedAccessToken = jwt.decode(accessToken)
-      if (!decodedAccessToken) {
-         throwValidationError('Invalid access token')
-      }
-
-      const refreshToken = await TokenStorage.getByUsernameToken(decodedAccessToken.username)
-      if (!refreshToken || refreshToken !== refreshToken) {
-         throwValidationError('Refresh token not found or mismatched')
+      const verifiedToken = TokenService.verifyRefreshToken(refreshToken)
+      
+      if(!verifiedToken){
+         throwValidationError('Не правильный токен')
       }
 
-      const tokens = TokenService.refreshAccessToken(refreshToken)
-      return tokens
+      const storedToken = 
+      
+
+      res.cookie('refreshToken', tokens.refreshToken, {
+         httpOnly: true,
+         secure: true,
+         sameSite: 'strict',
+         maxAge: 7 * 24 * 60 * 60 * 1000
+      });
+
+      return { accessToken: tokens.accessToken };
 
 }
 const check = async (queryParams,accessToken) => {

@@ -4,6 +4,8 @@ const jwt = require('jsonwebtoken')
 const { JWT } = require('../../config')
 const throwValidationError = require('../../lib/ValidationError')
 
+ 
+
 const TokenService = {
    generateTokens(payload) {
       const accessToken = jwt.sign(payload, JWT.accessSecret, {
@@ -15,24 +17,6 @@ const TokenService = {
       })
 
       return { accessToken, refreshToken }
-   },
-
-   verifyRefreshToken(token) {
-      try {
-         return jwt.verify(token, JWT.refreshSecret)
-      } catch {
-         return null
-      }
-   },
-   
-   verifyAccessToken(token){
-      try {
-         const verifiedToken = jwt.verify(token, JWT.accessSecret)
-         return verifiedToken 
-      } catch (err) {
-         console.dir(err)
-         throw err 
-      }
    },
 
    refreshAccessToken(refreshToken) {
@@ -51,6 +35,26 @@ const TokenService = {
       })
       return { accessToken }
    },
+   
+   verifyRefreshToken(token) {
+      try {
+         return jwt.verify(token, JWT.refreshSecret)
+      } catch {
+         return null
+      }
+   },
+
+   verifyAccessToken(token){
+      try {
+         const verifiedToken = jwt.verify(token, JWT.accessSecret)
+         return verifiedToken 
+      } catch (err) {
+         console.dir(err)
+         throw err 
+      }
+   },
+
+   
    logout(refreshToken) {
       const decoded = this.verifyRefreshToken(refreshToken)
       if (!decoded) {
@@ -60,4 +64,4 @@ const TokenService = {
    }
 }
 
-module.exports = TokenService
+module.exports = {TokenService}

@@ -32,7 +32,7 @@ async function login(args) {
     const tokens = TokenService.generateTokens(payload);
     await TokenStorage.setToken(username, role, tokens.refreshToken);
 
-    return tokens.accessToken;
+    return {accessToken: tokens.accessToken}
 
 }
 

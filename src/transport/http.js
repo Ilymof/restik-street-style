@@ -122,7 +122,7 @@ module.exports = (routing, port) => {
                     req.user = restrictAccess(token, cleanUrl);
                 }
 
-                const result = await handler(args, token);
+                const result = await handler(args, req, res); // Добавляем req и res
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify(result));
                 console.log(`${socket.remoteAddress} ${req.method} ${url}`);

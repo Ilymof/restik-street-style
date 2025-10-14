@@ -13,20 +13,20 @@ module.exports = {
         return await safeDbCall(() => admins.read())
     }, 
 
-    async login(rawBody) {
-        return await loginAdmin(rawBody)
+    async login(args, req, res) {
+        return await loginAdmin(args, res)
     },
 
-    async refresh(accessToken) {
-        return await toRefreshToken(accessToken)
+    async refresh(args, req, res) {
+        return await toRefreshToken(req, res)
     },
     
-    async 'token-check'(queryParams,accessToken){
-        return await check(queryParams,accessToken)
+    async 'token-check'(args,req){
+        const accessToken = req.headers.authorization?.replace(/^Bearer\s+/i, '') || null;
+        return await check(accessToken)
     },
 
-   async logout(refreshToken) {
-        return await logout(refreshToken)
-    },
-
+   async logout(args) {
+        return await logout(args)
+    }
 }

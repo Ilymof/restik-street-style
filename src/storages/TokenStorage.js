@@ -16,7 +16,7 @@ module.exports = {
    
    async getToken(refreshToken) {
       const sql = `
-         SELECT token 
+         SELECT  
          FROM tokens 
          WHERE token = $1 AND expires_at > NOW();
       `
@@ -26,13 +26,11 @@ module.exports = {
    },
    async getByUsernameToken(username) {
       const sql = `
-         SELECT token 
-         FROM tokens 
-         WHERE username = $1 AND expires_at > NOW();
+         SELECT * FROM tokens WHERE username = $1 AND expires_at > NOW()
       `
       const values = [username]
       const result = await token.query(sql, values)
-      return result.rows.length > 0 ? result.rows[0].token : null
+      return result.rows.length > 0 ? result.rows[0] : null
    },
    async deleteToken(username) {
       const sql = 'DELETE FROM tokens WHERE username = $1'

@@ -17,10 +17,6 @@ const validateSizeForDish = (inputSize, dish) => {
 };
 
 const updateOrder = async (args) => {
-  if (!args.id) {
-    throwValidationError('Поле id отсутствует');
-  }
-
   const exsistOrder = await safeDbCall(() => orders.read(args.id));
   if (exsistOrder.length < 1) {
     throwValidationError(`Нет заказа с id: ${args.id}`);
@@ -28,22 +24,20 @@ const updateOrder = async (args) => {
   const existingOrder = exsistOrder[0];
 
   const updateObj = {};
-  let needsRecalc = false;
-  let baseTotalPrice = 0;
+  let TotalPrice = 0;
   let orderedDishes = [];
 
   // Перебор args
   for (const [key, value] of Object.entries(args)) {
-    if (key === 'id') continue;
-
     if (key === 'delivery') {
-      const { status = true, address = '', comment = '' } = value;
-      updateObj.delivery = JSON.stringify({ status, address, comment });
+      const { status, address, comment} = value;
+
+      updateObj.delivery = JSON.stringify({ status, address: status ? address : '',comment: status ? comment : '' });
+
     } else if (key === 'dishes') {
       if (!Array.isArray(value) || value.length === 0) {
         throwValidationError('Dishes должен быть непустым массивом');
       }
-      needsRecalc = true;
 
       for (const oneDish of value) {
         const { id, quantity, size: inputSize } = oneDish;
@@ -84,20 +78,15 @@ const updateOrder = async (args) => {
           size: selectedSize,
           image: dish[0].image
         });
-        baseTotalPrice += dishPrice;
+        TotalPrice += dishPrice;
       }
       updateObj.dishes = JSON.stringify(orderedDishes);
-    } 
-  }
-
-    let totalPrice;
-    if (orderedDishes.length > 0) {
-      const existingDishes = JSON.parse(existingOrder.dishes || '[]');
-      const NewTotalPrice = existingDishes.reduce((sum, d) => sum + d.price, 0);
-      totalPrice = NewTotalPrice ;
+      updateObj.total_price = TotalPrice
+    } else {
+      updateObj[key] = value; 
     }
-    updateObj.total_price = totalPrice;
-    
+  }
+ 
   const result = await safeDbCall(() => orders.update(args.id, updateObj));
   if (!result) {
     throwValidationError('Ошибка при обновлении заказа');

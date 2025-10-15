@@ -197,15 +197,15 @@ module.exports = (routing, port) => {
         console.log(`API server on port ${port}`)
     });
 
-    cron.schedule('0 * * * *', async () => {
-        try {
-            const sql = 'DELETE FROM tokens WHERE expires_at < NOW() RETURNING *;';
-            const result = await token.query(sql);
-            console.log(`Удалено истёкших токенов: ${result.rowCount}`);
-        } catch (error) {
-            console.error('Ошибка очистки токенов:', error);
-        }
-    });
+    // cron.schedule('0 * * * *', async () => {
+    //     try {
+    //         const sql = 'DELETE FROM tokens WHERE expires_at < NOW() RETURNING *;';
+    //         const result = await token.query(sql);
+    //         console.log(`Удалено истёкших токенов: ${result.rowCount}`);
+    //     } catch (error) {
+    //         console.error('Ошибка очистки токенов:', error);
+    //     }
+    // });
 
     return server;
 };

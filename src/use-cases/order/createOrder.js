@@ -4,6 +4,7 @@ const orders = db('orders')
 const dishes = db('dish')
 const throwValidationError = require('../../lib/ValidationError')
 const safeDbCall = require('../../lib/safeDbCall')
+const { CreateOrderSchema} = require('../../schemas/orderMetaSchema.js');
 
 const validateSizeForDish = (inputSize, dish) => {
   if (!inputSize) {
@@ -22,7 +23,11 @@ const validateSizeForDish = (inputSize, dish) => {
   return size
 }
 
-const createOrder = async (args) => {
+const createOrder = async (args, req) => {
+  args.secret_key = req.headers.secret_key ? req.headers.secret_key : null
+  if (!CreateOrderSchema.check(args).valid){
+     throwValidationError(CreateOrderSchema.check(args).errors[0])
+    }   
   const orderedDishes = []
 
   let totalPrice = 0
@@ -75,13 +80,13 @@ const createOrder = async (args) => {
   }
 
 
-    const {
-    status,   
-    address,  
-    comment = ''
-    } = args.delivery || {}
+  const {status = false, address = '', comment = ''} = args.delivery || {}
 
-  const deliveryObj = { status, address, comment }
+  const deliveryObj = {
+      status,
+      address: status ? address : '',
+      comment: status ? comment : ''
+  };
 
   const order = {
     name: args.name,
@@ -91,7 +96,7 @@ const createOrder = async (args) => {
     status: false,
     delivery: JSON.stringify(deliveryObj),
     cutlery_status: args.cutlery_status,
-    cutlery_quantity: args.cutlery_quantity,
+    cutlery_quantity: args.cutlery_status ? args.cutlery_quantity : 0,
     order_comment: args.order_comment ? args.order_comment : '',
     secret_key: args.secret_key
   }

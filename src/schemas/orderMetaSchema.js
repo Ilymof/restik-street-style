@@ -14,7 +14,7 @@ const UpdateOrderSchema = Schema.from({
     id: 'number',
     name: '?string',
     phone: '?string',
-    delivery: {object: {status: 'boolean',address: 'string',comment: 'string'}, required: false },
+    'delivery?':{status: 'boolean',address: 'string',comment: '?string'},
     dishes: {array: {id: 'number',quantity: 'number', size: '?string'}, required: false },
     cutlery_status: '?boolean',
     cutlery_quantity:'?number', 

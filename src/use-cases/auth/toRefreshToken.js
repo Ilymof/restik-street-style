@@ -20,7 +20,6 @@ const toRefreshToken = async (req, res) => {
    //Вытягиваю из базы данных сюществующий токен
       const storedToken = await TokenStorage.getByUsernameToken(verifiedToken.username)
    //сравнение токена из куков и хэшированого токена из базы
-      console.log(storedToken);
       
       const comparedTokens = await bcrypt.compare(refreshToken, storedToken.token)
       if(!comparedTokens){

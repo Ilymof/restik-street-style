@@ -5,7 +5,7 @@ const orders = db('orders');
 const safeDbCall = require('../lib/safeDbCall.js');
 const createOrder = require('../use-cases/order/createOrder.js');
 const updateOrder = require('../use-cases/order/updateOrder.js');
-const filterOrder = require('../use-cases/order/filterOrder.js');
+const userOrders = require('../use-cases/order/userOrders.js');
 const {UpdateOrderSchema} = require('../schemas/orderMetaSchema.js');
 const errorHandler = require('../lib/errorHandler');
 const throwValidationError = require('../lib/ValidationError');
@@ -13,8 +13,8 @@ const throwValidationError = require('../lib/ValidationError');
 module.exports = {
   'read-all': async () => await safeDbCall(() => orders.read()),
 
-  'filter-order': async ({secretkey}) => {
-    return await filterOrder(secretkey);
+  'user-orders': async (arg, req) => {
+    return await userOrders(req);
   },
 
   read: async ({ id }) => {

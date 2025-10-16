@@ -105,8 +105,6 @@ module.exports = (routing, port) => {
                 let args;
                 if (method === 'GET' || method === 'DELETE') {
                     args = Object.fromEntries(urlObj.searchParams.entries());
-                    if (categoryPath) args.categoryPath = categoryPath;
-                    if (subcategoryPath) args.subcategoryPath = subcategoryPath;
                 } else if (method === 'POST') {
                     const contentType = req.headers['content-type'] || '';
                     if (contentType.includes('multipart/form-data')) {

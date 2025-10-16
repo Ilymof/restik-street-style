@@ -6,23 +6,17 @@ const TokenService = require('../../services/auth/JWTService')
 const removeBearer = require('../../lib/removeBearer')
 const throwValidationError = require('../../lib/ValidationError')
 
-async function addNewAdmin(args, token) {
-    const username = args.username
-    const password = args.password
+async function addNewAdmin(args) {
+    const {username, name , password} = args
 
-    const clearToken = removeBearer(token)
-    
-    const verifiedAccessToken = TokenService.verifyAccessToken(clearToken)
-    console.log(verifiedAccessToken);
-     
-    if (verifiedAccessToken && verifiedAccessToken.role == 2)
-    {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        await admins.create({username,password: hashedPassword,role: 1});
-        console.log(`Админ с именем пользователя ${username} был успешно добавлен`);
-    } else {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    try {
+        await admins.create({username,name,password: hashedPassword,role: 1});
+       console.log(`Админ с именем пользователя ${username} был успешно добавлен`) 
+    } catch (error) {
         throwValidationError("Не удалось добавить админа" )
     }
+ 
        
 }
 

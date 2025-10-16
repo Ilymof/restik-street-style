@@ -24,10 +24,7 @@ const ACCESS_CONTROL = {
 
    '/api/superuser/add-admin': [ROLES.SUPER_USER],
    '/api/superuser/del-admin': [ROLES.SUPER_USER],
-   
-   
-
-   
+   '/api/superuser/get-admins': [ROLES.SUPER_USER]
 }
 
 module.exports = { ROLES, ACCESS_CONTROL }

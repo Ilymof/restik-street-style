@@ -16,13 +16,13 @@ module.exports = {
    
    async getToken(refreshToken) {
       const sql = `
-         SELECT  
+         SELECT token
          FROM tokens 
          WHERE token = $1 AND expires_at > NOW();
       `
       const values = [refreshToken]
-      const result = await token.query(sql, values)
-      return result.rows.length > 0 ? result.rows[0].token : null
+      const result = await token.query(sql, values)  
+      return result.rows[0].token
    },
    async getByUsernameToken(username) {
       const sql = `

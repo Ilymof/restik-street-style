@@ -18,7 +18,7 @@ module.exports = {
     },
 
     async refresh(args, req, res) {
-        return await toRefreshToken(req, res)
+        return await toRefreshToken(req)
     },
     
     async 'token-check'(args,req){

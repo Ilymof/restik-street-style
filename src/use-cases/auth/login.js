@@ -30,21 +30,9 @@ async function login(args,res) {
     const role = admin.rows[0].role;
     const payload = { admin_id, username, role };
     const tokens = TokenService.generateTokens(payload);
-    const hashedRefreshToken = await bcrypt.hash(tokens.refreshToken, 10);
-    await TokenStorage.setToken(username, role, hashedRefreshToken);
+    await TokenStorage.setToken(username, role, tokens.refreshToken);
 
-    const isProduction = process.env.NODE_ENV === 'production';
-    const cookieOptions = [
-      `refreshToken=${tokens.refreshToken}`,
-      'HttpOnly',
-      isProduction ? 'Secure' : '',
-      'SameSite=Strict',
-      `Max-Age=${7 * 24 * 60 * 60}` // 7 дней в секундах
-    ].filter(Boolean).join('; ');
-
-    res.setHeader('Set-Cookie', cookieOptions);
-
-    return {accessToken: tokens.accessToken}
+    return tokens
 
 }
 

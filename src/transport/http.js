@@ -183,11 +183,16 @@ module.exports = (routing, port) => {
                 console.log(`${socket.remoteAddress} ${method} ${url} - Upload file not found`);
             }
         } catch (error) {
-            console.error(error);
-            const errorResponse = errorHandler(error);
-            res.writeHead(errorResponse.status || 500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify(errorResponse));  
-        }
+    console.error(error);
+    const errorResponse = errorHandler(error);
+    res.writeHead(errorResponse.status || 500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({
+        message: errorResponse.message || 'Внутренняя ошибка сервера',
+        type: errorResponse.type,
+        status: errorResponse.status || 500,
+        detail: errorResponse.detail || 'Unknown error'
+    }));
+}
     });
 
     

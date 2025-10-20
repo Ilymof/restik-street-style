@@ -20,7 +20,7 @@ class SqlQueryBuilder {
       return this
    }
 
-   createOrder(column = 'l.created_at', direction = 'DESC') {
+   createOrder(column = 'o.created_at', direction = 'DESC') {
       if (!this.hasOrder) {
          this.sql += ` ORDER BY ${column} ${direction}`
          this.hasOrder = true

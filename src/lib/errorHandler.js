@@ -1,5 +1,7 @@
 'use strict'
+
 const PermissionError = require('./PermissionError')
+const AppError = require('./AppError') // Добавляем импорт AppError
 
 module.exports = (error) => {
     if (error instanceof PermissionError) {
@@ -9,6 +11,15 @@ module.exports = (error) => {
             message: error.message,
             type: error.type || 'permission',
             detail: error.detail || 'Unknown permission error'
+        }
+    }
+
+    if (error instanceof AppError) { // Добавляем обработку AppError
+        return {
+            status: error.status || 400,
+            message: error.message || 'Ошибка валидации',
+            type: error.type || 'validation',
+            detail: error.detail || 'Unknown validation error'
         }
     }
 

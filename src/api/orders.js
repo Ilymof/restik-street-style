@@ -10,7 +10,7 @@ const getByFilter = require('../use-cases/order/getOrderByAnyParametr.js')
 const {UpdateOrderSchema} = require('../schemas/orderMetaSchema.js');
 const errorHandler = require('../lib/errorHandler');
 const throwValidationError = require('../lib/ValidationError');
-
+const getOrderByStatus = require('../use-cases/order/getOrderByStatus.js')
 module.exports = {
   'read-all': async () => await safeDbCall(() => orders.read()),
 
@@ -26,13 +26,14 @@ module.exports = {
     if (!Number(id)) {
       throw errorHandler(throwValidationError('id должен быть числом'));
     }
-    return await safeDbCall(() => orders.read(id));
+    return await safeDbCall(() => orders.read(id))
   },
 
   create: async (rawBody, req) => {
-    return await createOrder(rawBody, req);
+    const newOrder = await createOrder(rawBody, req)
+    req.server.notifyOrdersUpdate('added', newOrder)
+    return newOrder
   },
-
 
   update: async (rawBody) => {
     if (!UpdateOrderSchema.check(rawBody).valid){

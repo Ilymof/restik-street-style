@@ -65,14 +65,7 @@ module.exports = (routing, port) => {
             console.log(`${req.socket.remoteAddress} ${req.method} ${req.url} - CORS preflight`);
             return;
         }
-
-        // Проверяем, является ли запрос WebSocket
-        if (req.headers.upgrade && req.headers.upgrade.toLowerCase() === 'websocket') {
-            // WebSocket-запрос обрабатывается в chat.js
-            return;
-        }
-
-            
+      
         try {
             const { url, socket, method } = req;
             const urlObj = new URL(req.url, `http://${req.headers.host}`);
@@ -119,6 +112,8 @@ module.exports = (routing, port) => {
                 if (Object.keys(ACCESS_CONTROL).includes(cleanUrl)) {
                     req.user = restrictAccess(token, cleanUrl);
                 }
+
+                req.server = server;
 
                 const result = await handler(args, req, res); // Добавляем req и res
                 res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -195,20 +190,23 @@ module.exports = (routing, port) => {
 }
     });
 
+    const { notifyOrdersUpdate } = require('../websocket')(server);
+    server.notifyOrdersUpdate = notifyOrdersUpdate;
     
+    cron.schedule('0 * * * *', async () => {
+        try {
+            const sql = 'DELETE FROM tokens WHERE expires_at < NOW() RETURNING *;';
+            const result = await token.query(sql);
+            console.log(`Удалено истёкших токенов: ${result.rowCount}`);
+        } catch (error) {
+            console.error('Ошибка очистки токенов:', error);
+        }
+    });
+
     server.listen(port, '0.0.0.0', () => {
         console.log(`API server on port ${port}`)
     });
 
-    // cron.schedule('0 * * * *', async () => {
-    //     try {
-    //         const sql = 'DELETE FROM tokens WHERE expires_at < NOW() RETURNING *;';
-    //         const result = await token.query(sql);
-    //         console.log(`Удалено истёкших токенов: ${result.rowCount}`);
-    //     } catch (error) {
-    //         console.error('Ошибка очистки токенов:', error);
-    //     }
-    // });
-
+    
     return server;
 };

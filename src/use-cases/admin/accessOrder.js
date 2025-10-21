@@ -12,9 +12,8 @@ const accessOrder = async (args) => {
          throwValidationError(`Заказ с id ${args.id} не найден`);
       }
 
-
       const order = {
-        status: args.status,   
+        status: true,   
       }
       const result = await safeDbCall(() => orders.update(args.id, order));
       if (!result) {

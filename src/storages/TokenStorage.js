@@ -1,5 +1,6 @@
 'use strict'
 const db = require('../db')
+const throwValidationError = require('../lib/ValidationError')
 const token = db('tokens')
 
 module.exports = {
@@ -21,7 +22,10 @@ module.exports = {
          WHERE token = $1 AND expires_at > NOW();
       `
       const values = [refreshToken]
-      const result = await token.query(sql, values)  
+      const result = await token.query(sql, values)
+      if(result.rows.length < 1) {
+         throwValidationError('токен не действителен')
+      } 
       return result.rows[0].token
    },
    async getByUsernameToken(username) {

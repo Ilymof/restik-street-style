@@ -87,7 +87,7 @@ module.exports = (routing, port) => {
             const [place] = pathParts;
 
             if (place === 'api') {
-                const [, name, action, categoryPath, subcategoryPath] = pathParts;
+                const [, name, action] = pathParts;
                 const entity = routing[name];
                 if (!entity) {
                     res.writeHead(404, { 'Content-Type': 'application/json' });
@@ -183,10 +183,10 @@ module.exports = (routing, port) => {
                 console.log(`${socket.remoteAddress} ${method} ${url} - Upload file not found`);
             }
         } catch (error) {
-    console.error(error);
-    const errorResponse = errorHandler(error);
-    res.writeHead(errorResponse.status || 500, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({
+        console.error(error);
+        const errorResponse = errorHandler(error);
+        res.writeHead(errorResponse.status || 500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
         message: errorResponse.message || 'Внутренняя ошибка сервера',
         type: errorResponse.type,
         status: errorResponse.status || 500,

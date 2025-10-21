@@ -8,18 +8,18 @@ const jwt = require('jsonwebtoken')
 const safeDbCall = require('../../lib/safeDbCall.js')
 const throwValidationError = require('../../lib/ValidationError')
 
-async function logout(args) {
-    const username = args.username 
+async function logout(req) {
+    const refreshToken = req.headers.refresh_token || null;
   
     const sql =`
-      DELETE FROM tokens WHERE username = $1 RETURNING *
+      DELETE FROM tokens WHERE token = $1 RETURNING *
     `
 
-    if(username) {
-        await safeDbCall(() => tokens.query(sql, [username]))
-        console.log(`Пользователь ${username} успешно разлогинен`);
+    if(refreshToken) {
+        await safeDbCall(() => tokens.query(sql, [refreshToken]))
+        console.log(`Пользователь ${refreshToken} успешно разлогинен`);
     } else {
-      throwValidationError(`не найден пользователь с username: ${username}`)
+      throwValidationError(`не найден пользователь с токеном: ${refreshToken}`)
     }
 }
 

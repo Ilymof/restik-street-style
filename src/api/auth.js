@@ -26,7 +26,7 @@ module.exports = {
         return await check(accessToken)
     },
 
-   async logout(args) {
-        return await logout(args)
+   async logout(args, req) {
+        return await logout(req)
     }
 }

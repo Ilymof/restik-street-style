@@ -24,10 +24,6 @@ class PermissionError extends AppError {
     static insufficientRole(role) {
         return new PermissionError('Недостаточно прав', `Required role: ${role}`)
     }
-
-    static accountBlocked() {
-        return new PermissionError('Аккаунт заблокирован')
-    }
 }
 
 module.exports = PermissionError

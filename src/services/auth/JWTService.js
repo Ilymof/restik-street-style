@@ -21,8 +21,9 @@ const TokenService = {
    verifyRefreshToken(token) {
       try {
          return jwt.verify(token, JWT.refreshSecret)
-      } catch {
-         return null
+      } catch (err) {
+         console.dir(err)
+         throw err 
       }
    },
    

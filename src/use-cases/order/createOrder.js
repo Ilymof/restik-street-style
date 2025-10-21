@@ -85,8 +85,14 @@ const createOrder = async (args, req) => {
   const deliveryObj = {
       status,
       address: status ? address : '',
-      comment: status ? comment : ''
+      comment: status ? comment : '',
+      delivery_price: status ? 150 : 0
   };
+
+  if(!deliveryObj.address.toLowerCase().includes('сухум') && deliveryObj.status === true){
+    totalPrice += 300
+    deliveryObj.delivery_price = 300
+  }
 
   const order = {
     name: args.name,

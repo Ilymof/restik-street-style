@@ -9,8 +9,9 @@ const userOrders = require('../use-cases/order/userOrders.js');
 const getByFilter = require('../use-cases/order/getOrderByAnyParametr.js') 
 const {UpdateOrderSchema} = require('../schemas/orderMetaSchema.js');
 const errorHandler = require('../lib/errorHandler');
-const throwValidationError = require('../lib/ValidationError');
-const getOrderByStatus = require('../use-cases/order/getOrderByStatus.js')
+const throwValidationError = require('../lib/ValidationError')
+const accessOrder = require('../use-cases/order/accessOrder.js')
+
 module.exports = {
   'read-all': async () => await safeDbCall(() => orders.read()),
 
@@ -29,6 +30,10 @@ module.exports = {
     return await safeDbCall(() => orders.read(id))
   },
 
+  async 'access-order' (args) {
+    return await accessOrder(args)
+   },
+   
   create: async (rawBody, req) => {
     const newOrder = await createOrder(rawBody, req)
     req.server.notifyOrdersUpdate('added', newOrder)

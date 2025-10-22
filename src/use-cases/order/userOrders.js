@@ -12,7 +12,7 @@ const userOrders = async (req) => {
     `
     const result = await safeDbCall(() => orders.query(sql, [secret_key]))
     if (!result || result.rows.length<1){
-        throwValidationError(`Заказа с ключом ${secret_key} нет` )
+       return []
     }
     return result.rows
 }

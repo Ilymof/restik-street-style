@@ -1,14 +1,15 @@
-'use strict';
+'use strict'
 
-const db = require('../db.js');
-const orders = db('orders');
-const safeDbCall = require('../lib/safeDbCall.js');
-const createOrder = require('../use-cases/order/createOrder.js');
-const updateOrder = require('../use-cases/order/updateOrder.js');
-const userOrders = require('../use-cases/order/userOrders.js');
+const db = require('../db.js')
+const orders = db('orders')
+const safeDbCall = require('../lib/safeDbCall.js')
+const createOrder = require('../use-cases/order/createOrder.js')
+const updateOrder = require('../use-cases/order/updateOrder.js')
+const userOrders = require('../use-cases/order/userOrders.js')
 const getByFilter = require('../use-cases/order/getOrderByAnyParametr.js') 
-const {UpdateOrderSchema} = require('../schemas/orderMetaSchema.js');
-const errorHandler = require('../lib/errorHandler');
+const {UpdateOrderSchema} = require('../schemas/orderMetaSchema.js')
+const checkOpeningHours = require('../lib/checkOpeningHours.js')
+const errorHandler = require('../lib/errorHandler')
 const throwValidationError = require('../lib/ValidationError')
 const accessOrder = require('../use-cases/order/accessOrder.js')
 
@@ -20,12 +21,12 @@ module.exports = {
   },
 
   'user-orders': async (arg, req) => {
-    return await userOrders(req);
+    return await userOrders(req)
   },
 
   read: async ({ id }) => {
     if (!Number(id)) {
-      throw errorHandler(throwValidationError('id должен быть числом'));
+      throwValidationError('id должен быть числом')
     }
     return await safeDbCall(() => orders.read(id))
   },
@@ -35,6 +36,9 @@ module.exports = {
    },
    
   create: async (rawBody, req) => {
+    if(!checkOpeningHours()){
+      throwValidationError('Доступ запрещен: время создания заказа ограничено (23:00–10:00)')
+    }
     const newOrder = await createOrder(rawBody, req)
     req.server.notifyOrdersUpdate('added', newOrder)
     return newOrder
@@ -44,6 +48,6 @@ module.exports = {
     if (!UpdateOrderSchema.check(rawBody).valid){
       throw errorHandler(throwValidationError(UpdateOrderSchema.check(rawBody).errors[0]))
     }   
-    return await updateOrder(rawBody);
+    return await updateOrder(rawBody)
   }
-};
+}

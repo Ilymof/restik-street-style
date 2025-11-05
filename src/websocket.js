@@ -6,14 +6,18 @@ const getOrderByStatus = require('./use-cases/order/getOrderByStatus');
 module.exports = (httpServer) => {
   const wss = new WebSocket.Server({ server: httpServer });
 
+  const clients = new Map();
+
   wss.on('connection', async (ws, req) => {
     const url = new URL(req.url, `http://${req.headers.host}`);
     const token = url.searchParams.get('token');
+    console.log('Client connected:', req.socket.remoteAddress, 'Token:', token ? 'present' : 'missing');
 
     let isAuthorized = false;
     if (token) {
       try {
         const decoded = TokenService.verifyAccessToken(token);
+        clients.set(ws, { username: decoded.username, subscribed: [] });
         ws.username = decoded.username;
         isAuthorized = true;
         console.log(`Authorized: ${decoded.username}`);
@@ -38,6 +42,9 @@ module.exports = (httpServer) => {
         if (data.type === 'get_orders') {
           const orders = await getOrderByStatus();
           ws.send(JSON.stringify({ type: 'orders_read', data: orders }));
+        } else if (data.type === 'subscribe_orders') {
+          clients.get(ws)?.subscribed.push('orders');
+          console.log(`${ws.username} subscribed to orders`);
         } else {
           ws.send(JSON.stringify({ type: 'error', message: 'Unknown request type' }));
         }
@@ -48,9 +55,21 @@ module.exports = (httpServer) => {
     });
 
     ws.on('close', () => {
+      clients.delete(ws);
       console.log('Client disconnected');
     });
   });
 
-  return { wss };
+  function notifyOrdersUpdate(changeType, orderData, targetUsers = null) {
+    const message = JSON.stringify({ type: 'orders_update', changeType, data: orderData });
+    wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN && 
+          clients.get(client)?.subscribed.includes('orders') &&
+          (!targetUsers || targetUsers.includes(client.username))) {
+        client.send(message);
+      }
+    });
+  }
+
+  return { wss, notifyOrdersUpdate };
 };

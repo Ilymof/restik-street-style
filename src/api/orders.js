@@ -5,7 +5,6 @@ const orders = db('orders')
 const safeDbCall = require('../lib/safeDbCall.js')
 const createOrder = require('../use-cases/order/createOrder.js')
 const updateOrder = require('../use-cases/order/updateOrder.js')
-const userOrders = require('../use-cases/order/userOrders.js')
 const getByFilter = require('../use-cases/order/getOrderByAnyParametr.js') 
 const {UpdateOrderSchema} = require('../schemas/orderMetaSchema.js')
 const checkOpeningHours = require('../lib/checkOpeningHours.js')
@@ -18,10 +17,6 @@ module.exports = {
 
   'read-by-filter': async (args) =>{
     return await getByFilter(args)
-  },
-
-  'user-orders': async (arg, req) => {
-    return await userOrders(req)
   },
 
   read: async ({ id }) => {

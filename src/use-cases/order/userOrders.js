@@ -4,8 +4,7 @@ const orders = db('orders')
 const throwValidationError = require('../../lib/ValidationError')
 const safeDbCall = require('../../lib/safeDbCall')
 
-const userOrders = async (req) => {
-    const secret_key = req.headers.secret_key
+const userOrders = async (secret_key) => {
     
     const sql = `
         SELECT * FROM orders WHERE secret_key = $1;

@@ -2,74 +2,104 @@
 const WebSocket = require('ws');
 const TokenService = require('./services/auth/JWTService');
 const getOrderByStatus = require('./use-cases/order/getOrderByStatus');
+const userOrders = require('./use-cases/order/userOrders');
+const throwValidationError = require('./lib/ValidationError');
 
 module.exports = (httpServer) => {
   const wss = new WebSocket.Server({ server: httpServer });
+  const clients = new Map(); // Map<WebSocket, { username: string, subscribed: string[] }>
 
-  const clients = new Map();
-
-  wss.on('connection', async (ws, req) => {
+  wss.on('connection', (ws, req) => {
+    // Парсим query-параметры из URL подключения
     const url = new URL(req.url, `http://${req.headers.host}`);
     const token = url.searchParams.get('token');
-    console.log('Client connected:', req.socket.remoteAddress, 'Token:', token ? 'present' : 'missing');
+    const secretKey = url.searchParams.get('secret_key');
 
-    let isAuthorized = false;
+    let username = null;
+    let verifiedToken = null;
+
+    // Пытаемся верифицировать токен для username (если передан)
     if (token) {
       try {
-        const decoded = TokenService.verifyAccessToken(token);
-        clients.set(ws, { username: decoded.username, subscribed: [] });
-        ws.username = decoded.username;
-        isAuthorized = true;
-        console.log(`Authorized: ${decoded.username}`);
-      } catch (error) {
-        console.error('Token verification error:', error);
+        verifiedToken = TokenService.verifyAccessToken(token);
+        username = verifiedToken.username || 'anonymous'; // Предполагаем поле username в токене
+      } catch (err) {
         ws.send(JSON.stringify({ type: 'error', message: 'Invalid token' }));
-        ws.close(1008, 'Invalid token');
+        ws.close(1008, 'Invalid token'); // Закрываем соединение при неверном токене
         return;
       }
     }
 
-    ws.on('message', async (message) => {
+    // Сохраняем клиента в Map (по умолчанию подписан на 'orders')
+    clients.set(ws, { username, subscribed: ['orders'] });
+
+    console.log(`Клиент подключился (username: ${username || 'no token'}, token: ${!!token}, secret_key: ${!!secretKey})`);
+
+    ws.on('message', async (message) => { // async для возможных Promise в use-cases
       try {
         const data = JSON.parse(message.toString());
-        console.log(`Message from ${ws.username || 'Anonymous'}:`, data.type);
+        const { type } = data;
+        console.log(`Получен тип: ${type} от ${username || 'anonymous'}`);
 
-        if (!isAuthorized) {
-          ws.send(JSON.stringify({ type: 'error', message: 'Authorization required' }));
-          return;
+        let response;
+        switch (type) {
+          case 'all-orders':
+            if (!token) {
+              throwValidationError('Token required for all-orders');
+            }
+            try {
+              const allOrders = await getOrderByStatus(); // Если sync — уберите await
+              response = { type: 'orders', orders: allOrders };
+            } catch (err) {
+              response = { type: 'error', message: err.message || 'Failed to fetch all orders' };
+            }
+            break;
+
+          case 'user-orders':
+            if (!secretKey) {
+              throwValidationError('secret_key required for user-orders');
+            }
+            try {
+              const userOrdersList = await userOrders(secretKey); // Если sync — уберите await
+              response = { type: 'orders', orders: userOrdersList };
+            } catch (err) {
+              response = { type: 'error', message: err.message || 'Failed to fetch user orders' };
+            }
+            break;
+
+          default:
+            response = { type: 'error', message: 'Unknown type' };
         }
 
-        if (data.type === 'get_orders') {
-          const orders = await getOrderByStatus();
-          ws.send(JSON.stringify({ type: 'orders_read', data: orders }));
-        } else if (data.type === 'subscribe_orders') {
-          clients.get(ws)?.subscribed.push('orders');
-          console.log(`${ws.username} subscribed to orders`);
-        } else {
-          ws.send(JSON.stringify({ type: 'error', message: 'Unknown request type' }));
-        }
-      } catch (error) {
-        console.error('Error parsing message:', error);
-        ws.send(JSON.stringify({ type: 'error', message: 'Invalid message' }));
+        ws.send(JSON.stringify(response));
+      } catch (err) {
+        console.error('Message handler error:', err);
+        ws.send(JSON.stringify({ type: 'error', message: 'Invalid JSON or processing error' }));
       }
     });
 
     ws.on('close', () => {
+      console.log(`Клиент отключился (username: ${username || 'anonymous'})`);
       clients.delete(ws);
-      console.log('Client disconnected');
+    });
+
+    ws.on('error', (err) => {
+      console.error('WebSocket error:', err);
+      clients.delete(ws);
     });
   });
 
   function notifyOrdersUpdate(changeType, orderData, targetUsers = null) {
     const message = JSON.stringify({ type: 'orders_update', changeType, data: orderData });
     wss.clients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN && 
-          clients.get(client)?.subscribed.includes('orders') &&
-          (!targetUsers || targetUsers.includes(client.username))) {
-        client.send(message);
+      if (client.readyState === WebSocket.OPEN) {
+        const clientInfo = clients.get(client);
+        if (clientInfo?.subscribed.includes('orders') &&
+            (!targetUsers || targetUsers.includes(clientInfo.username))) {
+          client.send(message);
+        }
       }
     });
   }
-
   return { wss, notifyOrdersUpdate };
 };

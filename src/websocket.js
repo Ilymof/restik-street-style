@@ -3,14 +3,14 @@ const WebSocket = require('ws');
 const TokenService = require('./services/auth/JWTService');
 const getOrderByStatus = require('./use-cases/order/getOrderByStatus');
 const userOrders = require('./use-cases/order/userOrders');
+const updateOrderStatus = require('./use-cases/order/updateOrderStatus'); // Use-case для обновления
 const throwValidationError = require('./lib/ValidationError');
 
 module.exports = (httpServer) => {
   const wss = new WebSocket.Server({ server: httpServer });
-  const clients = new Map(); // Map<WebSocket, { username: string, subscribed: string[] }>
+  const clients = new Map(); // Map<WebSocket, { username?: string, secretKey?: string, subscribed: string[] }>
 
   wss.on('connection', (ws, req) => {
-    // Парсим query-параметры из URL подключения
     const url = new URL(req.url, `http://${req.headers.host}`);
     const token = url.searchParams.get('token');
     const secretKey = url.searchParams.get('secret_key');
@@ -18,37 +18,59 @@ module.exports = (httpServer) => {
     let username = null;
     let verifiedToken = null;
 
-    // Пытаемся верифицировать токен для username (если передан)
+    // Верификация токена только для админов
     if (token) {
       try {
         verifiedToken = TokenService.verifyAccessToken(token);
-        username = verifiedToken.username || 'anonymous'; // Предполагаем поле username в токене
+        username = verifiedToken.username || null;
+        if (!username) {
+          ws.send(JSON.stringify({ type: 'error', message: 'Invalid username in token' }));
+          ws.close(1008, 'Invalid token');
+          return;
+        }
       } catch (err) {
         ws.send(JSON.stringify({ type: 'error', message: 'Invalid token' }));
-        ws.close(1008, 'Invalid token'); // Закрываем соединение при неверном токене
+        ws.close(1008, 'Invalid token');
         return;
       }
     }
 
-    // Сохраняем клиента в Map (по умолчанию подписан на 'orders')
-    clients.set(ws, { username, subscribed: ['orders'] });
+    // Для клиентов: secretKey обязателен, username = null
+    // Для админов: token обязателен, secretKey = null (или игнорируем, если передан)
+    if (!token && !secretKey) {
+      ws.send(JSON.stringify({ type: 'error', message: 'Token or secret_key required' }));
+      ws.close(1008, 'Auth required');
+      return;
+    }
 
-    console.log(`Клиент подключился (username: ${username || 'no token'}, token: ${!!token}, secret_key: ${!!secretKey})`);
+    // Сохраняем: для админов — username, для клиентов — secretKey
+    clients.set(ws, { 
+      username: username || null, 
+      secretKey: secretKey || null,
+      subscribed: ['orders'] 
+    });
 
-    ws.on('message', async (message) => { // async для возможных Promise в use-cases
+    const clientType = username ? 'admin' : 'client';
+    console.log(`Клиент подключился (${clientType}: ${username || secretKey?.substring(0, 8) + '...'} )`);
+
+    ws.on('message', async (message) => {
       try {
         const data = JSON.parse(message.toString());
         const { type } = data;
-        console.log(`Получен тип: ${type} от ${username || 'anonymous'}`);
+        const clientInfo = clients.get(ws);
+        const isAdmin = !!clientInfo.username;
+        const isClient = !!clientInfo.secretKey;
+
+        console.log(`Получен тип: ${type} от ${isAdmin ? clientInfo.username : 'client'}`);
 
         let response;
         switch (type) {
           case 'all-orders':
-            if (!token) {
-              throwValidationError('Token required for all-orders');
+            if (!isAdmin) {
+              throwValidationError('Admin token required for all-orders');
             }
             try {
-              const allOrders = await getOrderByStatus(); // Если sync — уберите await
+              const allOrders = await getOrderByStatus();
               response = { type: 'orders', orders: allOrders };
             } catch (err) {
               response = { type: 'error', message: err.message || 'Failed to fetch all orders' };
@@ -56,14 +78,36 @@ module.exports = (httpServer) => {
             break;
 
           case 'user-orders':
-            if (!secretKey) {
+            if (!isClient) {
               throwValidationError('secret_key required for user-orders');
             }
             try {
-              const userOrdersList = await userOrders(secretKey); // Если sync — уберите await
+              const userOrdersList = await userOrders(secretKey);
               response = { type: 'orders', orders: userOrdersList };
             } catch (err) {
               response = { type: 'error', message: err.message || 'Failed to fetch user orders' };
+            }
+            break;
+
+          case 'update-order-status': // Только для админов
+            if (!isAdmin) {
+              throwValidationError('Admin token required for update');
+            }
+            const { orderId, newStatus } = data;
+            if (!orderId || !newStatus) {
+              throwValidationError('orderId and newStatus required');
+            }
+            try {
+              // Use-case возвращает { updatedOrder, ownerSecretKey }
+              const result = await updateOrderStatus(orderId, newStatus);
+              const { updatedOrder: orderData, ownerSecretKey } = result;
+
+              // Уведомляем владельца (по secret_key) + всех админов
+              notifyOrderUpdate('status_updated', orderData, ownerSecretKey);
+
+              response = { type: 'success', message: 'Order status updated', order: orderData };
+            } catch (err) {
+              response = { type: 'error', message: err.message || 'Failed to update order' };
             }
             break;
 
@@ -79,7 +123,8 @@ module.exports = (httpServer) => {
     });
 
     ws.on('close', () => {
-      console.log(`Клиент отключился (username: ${username || 'anonymous'})`);
+      const clientInfo = clients.get(ws);
+      console.log(`Клиент отключился (${!!clientInfo.username ? 'admin' : 'client'}: ${clientInfo.username || 'anonymous'})`);
       clients.delete(ws);
     });
 
@@ -89,17 +134,34 @@ module.exports = (httpServer) => {
     });
   });
 
-  function notifyOrdersUpdate(changeType, orderData, targetUsers = null) {
+  // Уведомление: владельцу по secret_key + всем админам
+  function notifyOrderUpdate(changeType, orderData, ownerSecretKey) {
     const message = JSON.stringify({ type: 'orders_update', changeType, data: orderData });
+
+    // 1. Уведомляем владельца (клиента) по secret_key, если онлайн
+    if (ownerSecretKey) {
+      wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          const clientInfo = clients.get(client);
+          if (clientInfo?.secretKey === ownerSecretKey && clientInfo.subscribed.includes('orders')) {
+            client.send(message);
+            console.log(`Уведомление владельцу по secret_key: ${ownerSecretKey.substring(0, 8)}...`);
+          }
+        }
+      });
+    }
+
+    // 2. Уведомляем всех админов (с username, подписанных на 'orders')
     wss.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
         const clientInfo = clients.get(client);
-        if (clientInfo?.subscribed.includes('orders') &&
-            (!targetUsers || targetUsers.includes(clientInfo.username))) {
+        if (clientInfo?.username && clientInfo.subscribed.includes('orders')) {
           client.send(message);
+          console.log(`Уведомление админу: ${clientInfo.username}`);
         }
       }
     });
   }
-  return { wss, notifyOrdersUpdate };
+
+  return { wss, notifyOrderUpdate };
 };

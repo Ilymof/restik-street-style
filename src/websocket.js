@@ -1,167 +1,160 @@
-'use strict';
-const WebSocket = require('ws');
-const TokenService = require('./services/auth/JWTService');
-const getOrderByStatus = require('./use-cases/order/getOrderByStatus');
-const userOrders = require('./use-cases/order/userOrders');
-const updateOrderStatus = require('./use-cases/order/updateOrderStatus'); // Use-case для обновления
-const throwValidationError = require('./lib/ValidationError');
+// 'use strict';
+// const WebSocket = require('ws');
+// const TokenService = require('./services/auth/JWTService');
+// const getOrderByStatus = require('./use-cases/order/getOrderByStatus');
+// const userOrders = require('./use-cases/order/userOrders');
+// const updateOrderStatus = require('./use-cases/order/updateOrderStatus');
+// const throwValidationError = require('./lib/ValidationError');
 
-module.exports = (httpServer) => {
-  const wss = new WebSocket.Server({ server: httpServer });
-  const clients = new Map(); // Map<WebSocket, { username?: string, secretKey?: string, subscribed: string[] }>
+// module.exports = (httpServer) => {
+//   const wss = new WebSocket.Server({ server: httpServer });
+//   const clients = new Map(); // Map<WebSocket, { role: 'admin' | 'client', username?: string, secretKey?: string }>
 
-  wss.on('connection', (ws, req) => {
-    const url = new URL(req.url, `http://${req.headers.host}`);
-    const token = url.searchParams.get('token');
-    const secretKey = url.searchParams.get('secret_key');
+//   // ===============================
+//   // 🔹 Утилиты
+//   // ===============================
 
-    let username = null;
-    let verifiedToken = null;
+//   function send(ws, data) {
+//     if (ws.readyState === WebSocket.OPEN) {
+//       ws.send(JSON.stringify(data));
+//     }
+//   }
 
-    // Верификация токена только для админов
-    if (token) {
-      try {
-        verifiedToken = TokenService.verifyAccessToken(token);
-        username = verifiedToken.username || null;
-        if (!username) {
-          ws.send(JSON.stringify({ type: 'error', message: 'Invalid username in token' }));
-          ws.close(1008, 'Invalid token');
-          return;
-        }
-      } catch (err) {
-        ws.send(JSON.stringify({ type: 'error', message: 'Invalid token' }));
-        ws.close(1008, 'Invalid token');
-        return;
-      }
-    }
+//   function broadcast(filterFn, payload) {
+//     for (const [client, info] of clients.entries()) {
+//       if (client.readyState === WebSocket.OPEN && filterFn(info)) {
+//         send(client, payload);
+//       }
+//     }
+//   }
 
-    // Для клиентов: secretKey обязателен, username = null
-    // Для админов: token обязателен, secretKey = null (или игнорируем, если передан)
-    if (!token && !secretKey) {
-      ws.send(JSON.stringify({ type: 'error', message: 'Token or secret_key required' }));
-      ws.close(1008, 'Auth required');
-      return;
-    }
+//   function notifyOrderUpdate(changeType, orderData, ownerSecretKey) {
+//     const payload = { type: 'orders_update', changeType, data: orderData };
 
-    // Сохраняем: для админов — username, для клиентов — secretKey
-    clients.set(ws, { 
-      username: username || null, 
-      secretKey: secretKey || null,
-      subscribed: ['orders'] 
-    });
+//     // Клиент-владелец
+//     if (ownerSecretKey) {
+//       broadcast(
+//         (info) => info.role === 'client' && info.secretKey === ownerSecretKey,
+//         payload
+//       );
+//     }
 
-    const clientType = username ? 'admin' : 'client';
-    console.log(`Клиент подключился (${clientType}: ${username || secretKey?.substring(0, 8) + '...'} )`);
+//     // Все админы
+//     broadcast((info) => info.role === 'admin', payload);
+//   }
 
-    ws.on('message', async (message) => {
-      try {
-        const data = JSON.parse(message.toString());
-        const { type } = data;
-        const clientInfo = clients.get(ws);
-        const isAdmin = !!clientInfo.username;
-        const isClient = !!clientInfo.secretKey;
+//   // ===============================
+//   // 🔹 Авторизация
+//   // ===============================
+//   function authenticateConnection(req) {
+//     const url = new URL(req.url, `http://${req.headers.host}`);
+//     const token = url.searchParams.get('token');
+//     const secretKey = url.searchParams.get('secret_key');
 
-        console.log(`Получен тип: ${type} от ${isAdmin ? clientInfo.username : 'client'}`);
+//     if (!token && !secretKey) throwValidationError('Token or secret_key required');
 
-        let response;
-        switch (type) {
-          case 'all-orders':
-            if (!isAdmin) {
-              throwValidationError('Admin token required for all-orders');
-            }
-            try {
-              const allOrders = await getOrderByStatus();
-              response = { type: 'orders', orders: allOrders };
-            } catch (err) {
-              response = { type: 'error', message: err.message || 'Failed to fetch all orders' };
-            }
-            break;
+//     if (token) {
+//       const verified = TokenService.verifyAccessToken(token);
+//       if (!verified?.username) throwValidationError('Invalid admin token');
+//       return { role: 'admin', username: verified.username };
+//     }
 
-          case 'user-orders':
-            if (!isClient) {
-              throwValidationError('secret_key required for user-orders');
-            }
-            try {
-              const userOrdersList = await userOrders(secretKey);
-              response = { type: 'orders', orders: userOrdersList };
-            } catch (err) {
-              response = { type: 'error', message: err.message || 'Failed to fetch user orders' };
-            }
-            break;
+//     // Клиент
+//     return { role: 'client', secretKey };
+//   }
 
-          case 'update-order-status': // Только для админов
-            if (!isAdmin) {
-              throwValidationError('Admin token required for update');
-            }
-            const { orderId, newStatus } = data;
-            if (!orderId || !newStatus) {
-              throwValidationError('orderId and newStatus required');
-            }
-            try {
-              // Use-case возвращает { updatedOrder, ownerSecretKey }
-              const result = await updateOrderStatus(orderId, newStatus);
-              const { updatedOrder: orderData, ownerSecretKey } = result;
+//   // ===============================
+//   // 🔹 Обработчики сообщений
+//   // ===============================
+//   const handlers = {
+//     async 'all-orders'(ws, info) {
+//       if (info.role !== 'admin') throwValidationError('Admin token required');
+//       const orders = await getOrderByStatus();
+//       send(ws, { type: 'orders', orders });
+//     },
 
-              // Уведомляем владельца (по secret_key) + всех админов
-              notifyOrderUpdate('status_updated', orderData, ownerSecretKey);
+//     async 'user-orders'(ws, info) {
+//       if (info.role !== 'client') throwValidationError('secret_key required');
+//       const orders = await userOrders(info.secretKey);
+//       send(ws, { type: 'orders', orders });
+//     },
 
-              response = { type: 'success', message: 'Order status updated', order: orderData };
-            } catch (err) {
-              response = { type: 'error', message: err.message || 'Failed to update order' };
-            }
-            break;
+//     async 'update-order-status'(ws, info, data) {
+//       if (info.role !== 'admin') throwValidationError('Admin token required');
+//       const { orderId, newStatus } = data;
+//       if (!orderId || !newStatus) throwValidationError('orderId and newStatus required');
 
-          default:
-            response = { type: 'error', message: 'Unknown type' };
-        }
+//       const result = await updateOrderStatus(orderId, newStatus);
+//       const { updatedOrder, ownerSecretKey } = result;
 
-        ws.send(JSON.stringify(response));
-      } catch (err) {
-        console.error('Message handler error:', err);
-        ws.send(JSON.stringify({ type: 'error', message: 'Invalid JSON or processing error' }));
-      }
-    });
+//       notifyOrderUpdate('status_updated', updatedOrder, ownerSecretKey);
+//       send(ws, { type: 'success', message: 'Order status updated', order: updatedOrder });
+//     }
+//   };
 
-    ws.on('close', () => {
-      const clientInfo = clients.get(ws);
-      console.log(`Клиент отключился (${!!clientInfo.username ? 'admin' : 'client'}: ${clientInfo.username || 'anonymous'})`);
-      clients.delete(ws);
-    });
+//   // ===============================
+//   // 🔹 Подключение клиента
+//   // ===============================
+//   wss.on('connection', (ws, req) => {
+//     let clientInfo;
+//     try {
+//       clientInfo = authenticateConnection(req);
+//     } catch (err) {
+//       send(ws, { type: 'error', message: err.message });
+//       ws.close(1008, 'Auth failed');
+//       return;
+//     }
 
-    ws.on('error', (err) => {
-      console.error('WebSocket error:', err);
-      clients.delete(ws);
-    });
-  });
+//     clients.set(ws, clientInfo);
+//     console.log(`✅ Connected: ${clientInfo.role} ${clientInfo.username || clientInfo.secretKey?.slice(0, 8)}`);
 
-  // Уведомление: владельцу по secret_key + всем админам
-  function notifyOrderUpdate(changeType, orderData, ownerSecretKey) {
-    const message = JSON.stringify({ type: 'orders_update', changeType, data: orderData });
+//     // -------------------------------
+//     // Обработка входящих сообщений
+//     // -------------------------------
+//     ws.on('message', async (raw) => {
+//       let data;
+//       try {
+//         data = JSON.parse(raw);
+//       } catch {
+//         send(ws, { type: 'error', message: 'Invalid JSON' });
+//         return;
+//       }
 
-    // 1. Уведомляем владельца (клиента) по secret_key, если онлайн
-    if (ownerSecretKey) {
-      wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-          const clientInfo = clients.get(client);
-          if (clientInfo?.secretKey === ownerSecretKey && clientInfo.subscribed.includes('orders')) {
-            client.send(message);
-            console.log(`Уведомление владельцу по secret_key: ${ownerSecretKey.substring(0, 8)}...`);
-          }
-        }
-      });
-    }
+//       const handler = handlers[data.type];
+//       if (!handler) {
+//         send(ws, { type: 'error', message: `Unknown type: ${data.type}` });
+//         return;
+//       }
 
-    // 2. Уведомляем всех админов (с username, подписанных на 'orders')
-    wss.clients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        const clientInfo = clients.get(client);
-        if (clientInfo?.username && clientInfo.subscribed.includes('orders')) {
-          client.send(message);
-          console.log(`Уведомление админу: ${clientInfo.username}`);
-        }
-      }
-    });
-  }
+//       try {
+//         await handler(ws, clientInfo, data);
+//       } catch (err) {
+//         console.error('Handler error:', err);
+//         send(ws, { type: 'error', message: err.message });
+//       }
+//     });
 
-  return { wss, notifyOrderUpdate };
-};
+//     // -------------------------------
+//     // Очистка при отключении
+//     // -------------------------------
+//     ws.on('close', () => {
+//       console.log(`❌ Disconnected: ${clientInfo.role} ${clientInfo.username || clientInfo.secretKey?.slice(0, 8)}`);
+//       clients.delete(ws);
+//     });
+
+//     ws.on('error', (err) => {
+//       console.error('WebSocket error:', err);
+//       clients.delete(ws);
+//     });
+//   });
+
+//   // ===============================
+//   // 🔹 Публичный API
+//   // ===============================
+//   return {
+//     wss,
+//     notifyOrderUpdate,
+//     broadcastAdmin: (payload) => broadcast((i) => i.role === 'admin', payload),
+//     broadcastClient: (key, payload) => broadcast((i) => i.role === 'client' && i.secretKey === key, payload),
+//   };
+// };

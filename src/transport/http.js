@@ -190,8 +190,8 @@ module.exports = (routing, port) => {
 }
     });
 
-    const { notifyOrdersUpdate } = require('../websocket')(server);
-    server.notifyOrdersUpdate = notifyOrdersUpdate;
+    // const { notifyOrdersUpdate } = require('../websocket')(server);
+    // server.notifyOrdersUpdate = notifyOrdersUpdate;
     
     cron.schedule('0 * * * *', async () => {
         try {

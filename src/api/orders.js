@@ -42,10 +42,10 @@ module.exports = {
 },
 
   create: async (rawBody, req) => {
-    if(!checkOpeningHours())
-      {
-         throwValidationError('Доступ запрещен: время создания заказа ограничено (23:00–10:00)') 
-      }
+    // if(!checkOpeningHours())
+    //   {
+    //      throwValidationError('Доступ запрещен: время создания заказа ограничено (23:00–10:00)') 
+    //   }
     const newOrderArray = await createOrder(rawBody, req)
     const newOrder = newOrderArray[0]
     const secretKey = newOrder.secret_key

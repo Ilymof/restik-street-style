@@ -7,7 +7,8 @@ const safeDbCall = require('../../lib/safeDbCall')
 const userOrders = async (secret_key) => {
     
     const sql = `
-        SELECT * FROM orders WHERE secret_key = $1;
+        SELECT * FROM orders WHERE secret_key = $1
+        ORDER BY status ASC, created_at DESC;
     `
     const result = await safeDbCall(() => orders.query(sql, [secret_key]))
     if (!result || result.rows.length<1){

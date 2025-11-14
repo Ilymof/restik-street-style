@@ -190,8 +190,7 @@ module.exports = (routing, port) => {
 }
     });
 
-    // const { notifyOrdersUpdate } = require('../websocket')(server);
-    // server.notifyOrdersUpdate = notifyOrdersUpdate;
+    
     
     cron.schedule('0 * * * *', async () => {
         try {
@@ -207,6 +206,6 @@ module.exports = (routing, port) => {
         console.log(`API server on port ${port}`)
     });
 
-    
+    require('../websocket.js')(server)
     return server;
 };

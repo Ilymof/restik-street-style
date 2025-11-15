@@ -15,7 +15,7 @@ const getOrderWhereParametr = async (queryParams) => {
          (p) => p.name && createCondition('o.name', '=', p.name),
          (p) => p.minCash && createCondition('o.total_price', '>=', p.minCash),
          (p) => p.maxCash && createCondition('o.total_price', '<=', p.maxCash),
-         (p) => p.status && createCondition('o.status', '=', p.status),
+         (p) => p.status && createCondition('o.current_status', '=', p.current_status),
          (p) => p.secret_key && createCondition('o.secret_key', '=', p.secret_key),
          (p) => p.dishName && createCondition('o.dishes', '@>', JSON.stringify([{name: p.dishName}])),
          (p) => p.size && createCondition('o.dishes', '@>', JSON.stringify([{size: p.size}])),

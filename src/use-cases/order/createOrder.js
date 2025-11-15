@@ -94,12 +94,19 @@ const createOrder = async (args, req) => {
     deliveryObj.delivery_price = 300
   }
 
+  const order_status = {
+    proccessing: 'В процессе',
+    canceled: 'Отменён',
+    finished: 'Готов'
+  };
+
   const order = {
     name: args.name,
     phone: args.phone,
     dishes: JSON.stringify(orderedDishes),
     total_price: totalPrice,
-    status: false,
+    order_status,
+    current_status: order_status.proccessing,
     delivery: JSON.stringify(deliveryObj),
     cutlery_status: args.cutlery_status,
     cutlery_quantity: args.cutlery_status ? args.cutlery_quantity : 0,

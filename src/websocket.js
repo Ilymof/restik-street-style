@@ -4,6 +4,7 @@ const TokenService = require('./services/auth/JWTService');
 const getOrderByStatus = require('./use-cases/order/getOrderByStatus');
 const userOrders = require('./use-cases/order/userOrders');
 const throwValidationError = require('./lib/ValidationError');
+const accessOrder = require('./use-cases/order/accessOrder.js')
 
 module.exports = (httpServer) => {
   const wss = new WebSocket.Server({ server: httpServer });
@@ -75,7 +76,18 @@ module.exports = (httpServer) => {
       if (info.role !== 'admin') throwValidationError('Admin token required');
       const list = await getOrderByStatus();
       send(ws, { type: "orders", changeType: "updated",orders: list });
+    }, 
+    async "update-status"(ws, info, data) {
+      const { id, status } = data.action || {};
+      if (!id || !status) {
+        send(ws, { type: 'error', message: 'Missing id or status in action' });
+        return;
+      }
+      if (info.role !== 'admin') throwValidationError('Admin token required');
+      const acceptedOrder = await accessOrder(id, status);
+      send(ws, { type: "orders", changeType: "update_status",orders: acceptedOrder });
     }
+
   };
 
   // ===========================

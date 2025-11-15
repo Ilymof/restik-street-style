@@ -4,18 +4,18 @@ const orders = db('orders');
 const safeDbCall = require('../../lib/safeDbCall');
 const throwValidationError = require('../../lib/ValidationError')
 
-const accessOrder = async (args) => {
-      if (!args.id) throwValidationError('Поле id отсутствует');
-
-      const existingOrder = await safeDbCall(() => orders.read(args.id));
+const accessOrder = async (id, status) => {
+      if (!id && !status) throwValidationError('Поле id или status отсутствует');
+      
+      const existingOrder = await safeDbCall(() => orders.read(id));
       if (!existingOrder || existingOrder.length < 1) {
-         throwValidationError(`Заказ с id ${args.id} не найден`);
+         throwValidationError(`Заказ с id ${id} не найден`);
       }
 
       const order = {
-        status: true,   
+        current_status: status,   
       }
-      const result = await safeDbCall(() => orders.update(args.id, order));
+      const result = await safeDbCall(() => orders.update(id, order));
       if (!result) {
          throwValidationError('Ошибка при обновлении заказа');
       }

@@ -17,7 +17,7 @@ module.exports = {
       return await safeDbCall(() => categories.read(id))
    },
 
-   create: async (data) => {
+   create: async (data) => {   
       return await safeDbCall(() => categories.create(data))
    },
 

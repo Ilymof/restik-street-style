@@ -21,8 +21,6 @@ const getOrderByStatus = async () => {
     if (!result || result.rows.length<1){
         throwValidationError('нет заказов')
     }
-    console.log(result.rows);
-    
     return result.rows
 }
 

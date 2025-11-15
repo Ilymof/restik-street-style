@@ -8,6 +8,7 @@ const userOrders = async (secret_key) => {
     
     const sql = `
         SELECT * FROM orders
+        WHERE secret_key = $1
     ORDER BY 
       CASE 
         WHEN current_status = 'В процессе' THEN 1

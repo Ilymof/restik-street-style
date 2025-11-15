@@ -27,24 +27,12 @@ module.exports = {
     return await getByFilter(args)
   },
 
-  'user-orders': async (arg) => {
-    return await userOrders(arg)
-  },
   read: async ({ id }) => {
     if (!Number(id)) {
       throwValidationError('id должен быть числом')
     }
     return await safeDbCall(() => orders.read(id))
   },
-
-  'access-order': async (args, req) => {
-
-  let updatedOrderArray = await accessOrder(args)
-  const updatedOrder = updatedOrderArray[0]
-  const secretKey = updatedOrder.secret_key
-  req.server.notifyOrdersUpdate('update_status', updatedOrderArray, secretKey)
-  return updatedOrder
-},
 
   create: async (rawBody, req) => {
     // if(!checkOpeningHours())
@@ -55,7 +43,7 @@ module.exports = {
     const newOrder = newOrderArray[0]
     const secretKey = newOrder.secret_key
     req.server.notifyOrdersUpdate('added', newOrderArray, secretKey)
-    return newOrder
+    return newOrderArray
   },
 
   update: async (rawBody) => {

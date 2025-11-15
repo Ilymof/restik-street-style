@@ -4,7 +4,8 @@ const TokenService = require('./services/auth/JWTService');
 const getOrderByStatus = require('./use-cases/order/getOrderByStatus');
 const userOrders = require('./use-cases/order/userOrders');
 const throwValidationError = require('./lib/ValidationError');
-const accessOrder = require('./use-cases/order/accessOrder.js')
+const accessOrder = require('./use-cases/order/accessOrder.js');
+const { log } = require('console');
 
 module.exports = (httpServer) => {
   const wss = new WebSocket.Server({ server: httpServer });
@@ -36,11 +37,10 @@ module.exports = (httpServer) => {
         clientPayload
       );
     }
-    const fullOrders = await getOrderByStatus();
     const adminPayload = {
       type: 'orders',
       changeType,
-      orders: fullOrders
+      orders
     };
     broadcast((info) => info.role === 'admin', adminPayload);
   };

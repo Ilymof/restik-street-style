@@ -68,13 +68,13 @@ module.exports = (httpServer) => {
     async "user-orders"(ws, info) {
       if (info.role !== 'client') throwValidationError('secret_key required');
       const list = await userOrders(info.secretKey);
-      send(ws, { type: "orders", orders: list });
+      send(ws, { type: "orders", changeType: "updated", orders: list });
     },
 
     async "all-orders"(ws, info) {
       if (info.role !== 'admin') throwValidationError('Admin token required');
       const list = await getOrderByStatus();
-      send(ws, { type: "orders", orders: list });
+      send(ws, { type: "orders", changeType: "updated",orders: list });
     }
   };
 

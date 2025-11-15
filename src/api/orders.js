@@ -42,7 +42,7 @@ module.exports = {
   let updatedOrderArray = await accessOrder(args)
   const updatedOrder = updatedOrderArray[0]
   const secretKey = updatedOrder.secret_key
-  req.server.notifyOrdersUpdate('status_updated', updatedOrderArray, secretKey)
+  req.server.notifyOrdersUpdate('update_status', updatedOrderArray, secretKey)
   return updatedOrder
 },
 

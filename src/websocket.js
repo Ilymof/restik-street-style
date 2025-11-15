@@ -26,7 +26,7 @@ module.exports = (httpServer) => {
   httpServer.notifyOrdersUpdate = async function (changeType, orders, ownerSecretKey = null) {
     if (ownerSecretKey) {
       const clientPayload = {
-        type: 'orders_update',
+        type: 'orders',
         changeType,
         orders
       };
@@ -37,7 +37,7 @@ module.exports = (httpServer) => {
     }
     const fullOrders = await getOrderByStatus();
     const adminPayload = {
-      type: 'orders_update',
+      type: 'orders',
       changeType,
       orders: fullOrders
     };

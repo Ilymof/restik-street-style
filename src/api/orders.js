@@ -42,8 +42,7 @@ module.exports = {
   let updatedOrderArray = await accessOrder(args)
   const updatedOrder = updatedOrderArray[0]
   const secretKey = updatedOrder.secret_key
-  const updatedOrderList = await userOrders(secretKey)
-  req.server.notifyOrdersUpdate('status_updated', updatedOrderList, secretKey)
+  req.server.notifyOrdersUpdate('status_updated', updatedOrderArray, secretKey)
   return updatedOrder
 },
 
@@ -55,9 +54,7 @@ module.exports = {
     const newOrderArray = await createOrder(rawBody, req)
     const newOrder = newOrderArray[0]
     const secretKey = newOrder.secret_key
-    const updatedOrders = await userOrders(secretKey )
-    req.server.notifyOrdersUpdate('added', updatedOrders, secretKey)
-
+    req.server.notifyOrdersUpdate('added', newOrderArray, secretKey)
     return newOrder
   },
 

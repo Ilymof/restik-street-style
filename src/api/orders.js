@@ -2,6 +2,7 @@
 
 const db = require('../db.js')
 const orders = db('orders')
+const cron = require('node-cron');
 const safeDbCall = require('../lib/safeDbCall.js')
 const createOrder = require('../use-cases/order/createOrder.js')
 const updateOrder = require('../use-cases/order/updateOrder.js')
@@ -12,6 +13,12 @@ const checkOpeningHours = require('../lib/checkOpeningHours.js')
 const errorHandler = require('../lib/errorHandler')
 const throwValidationError = require('../lib/ValidationError')
 const accessOrder = require('../use-cases/order/accessOrder.js')
+const cleanOrders = require('../use-cases/order/autoOrderCleaner.js')
+
+cron.schedule('*/5 * * * *', async () => {
+  console.log('Running cleanup...');
+  await cleanOrders()
+})
 
 module.exports = {
   'read-all': async () => await safeDbCall(() => orders.read()),
@@ -23,7 +30,6 @@ module.exports = {
   'user-orders': async (arg) => {
     return await userOrders(arg)
   },
-
   read: async ({ id }) => {
     if (!Number(id)) {
       throwValidationError('id должен быть числом')
@@ -54,8 +60,6 @@ module.exports = {
 
     return newOrder
   },
-
-  
 
   update: async (rawBody) => {
     if (!UpdateOrderSchema.check(rawBody).valid){

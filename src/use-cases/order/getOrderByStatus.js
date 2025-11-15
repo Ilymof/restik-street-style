@@ -10,9 +10,9 @@ const getOrderByStatus = async () => {
         SELECT * FROM orders
     ORDER BY 
       CASE 
-        WHEN current_status = 'processing' THEN 1
-        WHEN current_status = 'finished' THEN 2
-        WHEN current_status = 'canceled' THEN 3
+        WHEN current_status = 'В процессе' THEN 1
+        WHEN current_status = 'Готов' THEN 2
+        WHEN current_status = 'Отменён' THEN 3
         ELSE 4 
       END ASC,
       created_at DESC;

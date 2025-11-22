@@ -6,8 +6,11 @@ const safeDbCall = require('../lib/safeDbCall.js')
 const createDish = require('../use-cases/dish/createDish.js')
 const deleteDish = require('../use-cases/dish/deleteDish.js')
 const updateDish = require('../use-cases/dish/updateDish.js')
+const getDishes = require('../use-cases/dish/getDishes.js')
 module.exports = {
-   'read-all': async () => await safeDbCall(() => dishes.read()),
+   'read-all': async () =>{
+      return await getDishes()    
+   },
 
    read: async ({ id }) => {
       return await safeDbCall(() => dishes.read(id))

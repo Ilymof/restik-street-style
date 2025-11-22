@@ -15,8 +15,7 @@ const getDishesByCategory = async () => {
             d.composition,
             d.image,
             d.default_characteristics,
-            d.characteristics,
-            d.categoryid
+            d.characteristics
          FROM category c
          LEFT JOIN dish d ON c.id = d.categoryid
          ORDER BY c.id, d.id
@@ -41,14 +40,13 @@ const getDishesByCategory = async () => {
             composition, 
             default_characteristics,
             characteristics, 
-            image, 
-            categoryid 
+            image
          } = row;
 
          let category = acc.find(cat => cat.categoryId === category_id);
          if (!category) {
             category = {
-               categoryId: category_id,
+               category_id: category_id,
                category_name,
                dishes: []
             };
@@ -59,13 +57,12 @@ const getDishesByCategory = async () => {
             const dishObj = {
                id: dish_id,
                name: dish_name,
-               categoryName: category_name,
+               category_name,
                description,
                dish_status,
                composition,
                quantity:1,
                image,
-               categoryid,
                default_characteristics,
                characteristics
             };

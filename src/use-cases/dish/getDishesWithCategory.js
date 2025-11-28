@@ -43,10 +43,10 @@ const getDishesByCategory = async () => {
             image
          } = row;
 
-         let category = acc.find(cat => cat.categoryId === category_id);
+         let category = acc.find(cat => cat.category_id === category_id);
          if (!category) {
             category = {
-               category_id: category_id,
+               category_id,
                category_name,
                dishes: []
             };
@@ -57,7 +57,6 @@ const getDishesByCategory = async () => {
             const dishObj = {
                id: dish_id,
                name: dish_name,
-               category_name,
                description,
                dish_status,
                composition,

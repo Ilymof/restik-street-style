@@ -23,6 +23,37 @@ const updateDish = async (rawBody) => {
         throwValidationError(`Нет блюда с id: ${id}`)
       }
       
+      // composition
+    if (composition && typeof composition === 'string') {
+        try {
+            const parsed = JSON.parse(composition)
+            if (!Array.isArray(parsed)) {
+                throwValidationError("composition должен быть массивом строк")
+            }
+            composition = parsed
+        } catch (e) {
+            throwValidationError(`Неверный JSON в composition: ${e.message}`)
+        }
+    }
+
+    // characteristics
+    if (characteristics && typeof characteristics === 'string') {
+        try {
+            characteristics = JSON.parse(characteristics)
+
+            if (Array.isArray(characteristics)) {
+                characteristics = characteristics.map(char => ({
+                    size: char.size,
+                    price: char.price,
+                    weight: char.weight,
+                    measure: char.measure
+                }))
+            }
+        } catch (e) {
+            throwValidationError(`Неверный JSON в characteristics: ${e.message}`)
+        }
+    }
+    
       if (imagePath){
         if (existing_dish[0].image && existing_dish[0].image.length > 0) {
                     const filePath = path.join(__dirname, '../../../uploads', existing_dish[0].image)
@@ -46,10 +77,13 @@ const updateDish = async (rawBody) => {
          ...(composition && { composition }),
          ...(categoryid && { categoryid: parseInt(categoryid) }),
          ...(parsedDishStatus !== undefined && { dish_status: parsedDishStatus }),
-         ...(default_characteristics && {default_characteristics}),
-         ...(characteristics && {characteristics})
+         ...(default_characteristics && {default_characteristics})
       }
       
+      if (characteristics !== undefined) {
+         dish.characteristics = JSON.stringify(characteristics);
+      }
+
       if (imagePath) {
          dish.image = imagePath
       }

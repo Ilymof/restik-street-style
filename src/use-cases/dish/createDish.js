@@ -18,6 +18,17 @@ const createDish = async (rawBody) => {
       
       let {name, description, composition, categoryid, default_characteristics, characteristics} = fields  
 
+      if (composition && typeof composition === 'string') {
+         try {
+            composition = JSON.parse(composition);
+            if (!Array.isArray(composition)) {
+                  throwValidationError("composition должен быть массивом строк");
+            }
+         } catch (e) {
+            throwValidationError(`Неверный JSON в composition: ${e.message}`);
+         }
+      }
+
       if (characteristics && typeof characteristics === 'string') {
          try {
             characteristics = JSON.parse(characteristics);

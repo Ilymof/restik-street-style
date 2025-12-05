@@ -7,6 +7,9 @@ const safeDbCall = require('../lib/safeDbCall.js')
 const updateCategory = require('../use-cases/categories/updateCategory.js')
 const createCategory = require('../use-cases/categories/createCategory.js')
 const getCategories = require('../use-cases/categories/getCategories.js')
+const throwValidationError = require('../lib/ValidationError')
+const {CreateCategorySchema, UpdateCategorySchema} = require('../schemas/categoryMetaSchema.js')
+
 
 module.exports = {
 
@@ -23,12 +26,20 @@ module.exports = {
    },
 
    create: async (rawBody) => {   
-       return await createCategory(rawBody)
+       if (!CreateCategorySchema.check(rawBody).valid){
+      throw throwValidationError(CreateCategorySchema.check(rawBody).errors[0])
+    }   
+    return await createCategory(rawBody)
    },
 
    update: async (rawBody) => {
-     return await updateCategory(rawBody)
+      if (!UpdateCategorySchema.check(rawBody).valid){
+      throw throwValidationError(UpdateCategorySchema.check(rawBody).errors[0])
+    }   
+    return await updateCategory(rawBody)
    },
+
+   
 
    delete: async ({ id }) => {
       return await safeDbCall(() => categories.delete(id))

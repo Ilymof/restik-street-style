@@ -9,7 +9,6 @@ const updateOrder = require('../use-cases/order/updateOrder.js')
 const getByFilter = require('../use-cases/order/getOrderByAnyParametr.js') 
 const {UpdateOrderSchema} = require('../schemas/orderMetaSchema.js')
 const {checkOpeningHours} = require('../lib/checkOpeningHours.js')
-const errorHandler = require('../lib/errorHandler')
 const throwValidationError = require('../lib/ValidationError')
 const cleanOrders = require('../use-cases/order/autoOrderCleaner.js')
 
@@ -46,7 +45,7 @@ module.exports = {
 
   update: async (rawBody) => {
     if (!UpdateOrderSchema.check(rawBody).valid){
-      throw errorHandler(throwValidationError(UpdateOrderSchema.check(rawBody).errors[0]))
+      throw throwValidationError(UpdateOrderSchema.check(rawBody).errors[0])
     }   
     return await updateOrder(rawBody)
   }

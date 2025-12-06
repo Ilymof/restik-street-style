@@ -8,8 +8,8 @@ const getDishesByCategory = async () => {
          SELECT 
             c.id AS category_id,
             c.name AS category_name,
-            d.id AS dish_id,
-            d.name AS dish_name,
+            d.id,
+            d.name,
             d.description,
             d.dish_status,
             d.composition,

@@ -55,7 +55,7 @@ const createDish = async (rawBody) => {
          dish_status: true,
          default_characteristics: parseInt(default_characteristics),
          characteristics,
-         position
+         position: parseInt(position)
       }
       
       if(!CreateDishesSchema.check(dish).valid){

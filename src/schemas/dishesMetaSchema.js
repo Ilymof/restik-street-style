@@ -16,11 +16,11 @@ const UpdateDishesSchema = Schema.from({
     id: 'number',
     name: '?string',
     categoryid: '?number',
-    '?composition': {array: 'string'},
+    'composition?': {array: 'string'},
     description: '?string',
     dish_status: '?boolean',
     image: '?string',
-    '?characteristics': {array: {size:'string', price:'string', weight: 'string', measure: 'string'}},
+    characteristics: {array: {size:'string', price:'string', weight: 'string', measure: 'string'},  required: false},
     default_characteristics: '?number',
     position: '?number'
 })

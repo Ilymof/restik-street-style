@@ -3,9 +3,10 @@ const { processMultipart } = require('../../lib/multipartParser')
 const db = require('../../db')
 const dishes = db('dish')
 const safeDbCall = require('../../lib/safeDbCall')
+const {UpdateDishesSchema} = require('../../schemas/dishesMetaSchema')
 const { promises: fs } = require('fs')
 const path = require('path')
-
+const parseBoolean = require('../../lib/Parsing')
 const updateDish = async (rawBody) => {
       const boundary = rawBody.headers['content-type'].split('boundary=')[1]
       if (!boundary) throwValidationError('Invalid multipart/form-data')
@@ -23,36 +24,33 @@ const updateDish = async (rawBody) => {
         throwValidationError(`Нет блюда с id: ${id}`)
       }
       
-      // composition
     if (composition && typeof composition === 'string') {
         try {
-            const parsed = JSON.parse(composition)
-            if (!Array.isArray(parsed)) {
-                throwValidationError("composition должен быть массивом строк")
+            composition = JSON.parse(composition);
+            if (!Array.isArray(composition)) {
+                throwValidationError("composition должен быть массивом строк");
             }
-            composition = parsed
         } catch (e) {
-            throwValidationError(`Неверный JSON в composition: ${e.message}`)
+            throwValidationError(`Неверный JSON в composition: ${e.message}`);
         }
     }
 
-    // characteristics
-    if (characteristics && typeof characteristics === 'string') {
-        try {
-            characteristics = JSON.parse(characteristics)
+      if (characteristics && typeof characteristics === 'string') {
+         try {
+            characteristics = JSON.parse(characteristics);
 
             if (Array.isArray(characteristics)) {
-                characteristics = characteristics.map(char => ({
-                    size: char.size,
-                    price: char.price,
-                    weight: char.weight,
-                    measure: char.measure
-                }))
+               characteristics = characteristics.map(char => ({
+                  size: char.size,
+                  price: char.price,  
+                  weight: char.weight, 
+                  measure: char.measure
+               }));
             }
-        } catch (e) {
-            throwValidationError(`Неверный JSON в characteristics: ${e.message}`)
-        }
-    }
+         } catch (e) {
+            throwValidationError(`Неверный JSON в characteristics: ${e.message}`);
+         }
+      }
     
       if (imagePath){
         if (existing_dish[0].image && existing_dish[0].image.length > 0) {
@@ -67,20 +65,34 @@ const updateDish = async (rawBody) => {
       }
 
       
-      
-      
-      let parsedDishStatus = dish_status === '1' || dish_status === 'true' || dish_status === true;
-
+    
       const dish = {   
          ...(name && { name }), 
          ...(description !== undefined && { description }),
          ...(composition && { composition }),
          ...(categoryid && { categoryid: parseInt(categoryid) }),
-         ...(parsedDishStatus !== undefined && { dish_status: parsedDishStatus }),
-         ...(default_characteristics && {default_characteristics}),
-         ...(position && {position})
+         ...(dish_status && { dish_status: parseBoolean(dish_status)}),
+         ...(characteristics && {characteristics}),
+         ...(default_characteristics && {default_characteristics: parseInt(default_characteristics)}),
+         ...(position && {position: parseInt(position)})
       }
+      console.log(dish);
       
+        if(!id){
+            throwValidationError('Отсутствует id блюда');
+        }
+        if (Object.keys(dish).length === 0) {
+            throwValidationError('Нет данных для обновления');
+        }
+        const validationDish ={
+        id: parseInt(id),
+            ...dish
+        }
+
+      if(!UpdateDishesSchema.check(validationDish).valid){
+         throwValidationError(UpdateDishesSchema.check(validationDish).errors[0])
+      }
+
       if (characteristics !== undefined) {
          dish.characteristics = JSON.stringify(characteristics);
       }

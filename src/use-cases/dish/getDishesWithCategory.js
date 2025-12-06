@@ -8,6 +8,8 @@ const getDishesByCategory = async () => {
          SELECT 
             c.id AS category_id,
             c.name AS category_name,
+            c.status,
+            c.position,
             d.id AS dish_id,
             d.name AS dish_name,
             d.description,
@@ -16,10 +18,10 @@ const getDishesByCategory = async () => {
             d.image,
             d.default_characteristics,
             d.characteristics,
-            d.position
+            d.position AS dish_position
          FROM category c
          LEFT JOIN dish d ON c.id = d.categoryid
-         ORDER BY c.id, d.position
+         ORDER BY c.position, d.position
       `;
       const result = await safeDbCall(() => category.query(query));
 
@@ -33,7 +35,9 @@ const getDishesByCategory = async () => {
       const groupedDishes = rows.reduce((acc, row) => {
          const { 
             category_id, 
-            category_name, 
+            category_name,
+            status,
+            position,
             dish_id, 
             dish_name, 
             description, 
@@ -41,7 +45,7 @@ const getDishesByCategory = async () => {
             composition, 
             default_characteristics,
             characteristics,
-            position, 
+            dish_position, 
             image
          } = row;
 
@@ -50,6 +54,8 @@ const getDishesByCategory = async () => {
             category = {
                category_id,
                category_name,
+               status,
+               position,
                dishes: []
             };
             acc.push(category);
@@ -66,7 +72,7 @@ const getDishesByCategory = async () => {
                image,
                default_characteristics,
                characteristics,
-               position
+               position: dish_position
             };
             category.dishes.push(dishObj);
          }

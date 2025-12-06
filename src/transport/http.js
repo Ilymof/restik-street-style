@@ -54,17 +54,17 @@ module.exports = (routing, port) => {
         // } else {
         //     res.setHeader('Access-Control-Allow-Origin', '');
         // }
-        res.setHeader('Access-Control-Allow-Origin', '*')
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', '*');
         res.setHeader('Access-Control-Allow-Headers', '*');
-        
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
 
         if (req.method === 'OPTIONS') {
-            res.writeHead(204);
+            res.writeHead(200);
             res.end();
-            console.log(`${req.socket.remoteAddress} ${req.method} ${req.url} - CORS preflight`);
             return;
         }
+
       
         try {
             const { url, socket, method } = req;

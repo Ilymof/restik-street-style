@@ -16,7 +16,7 @@ const createDish = async (rawBody) => {
       const imageFile = files.find(f => f.name === 'image') 
       const imagePath = imageFile ? imageFile.filename : null
       
-      let {name, description, composition, categoryid, default_characteristics, characteristics} = fields  
+      let {name, description, composition, categoryid, default_characteristics, characteristics, position} = fields  
 
       if (composition && typeof composition === 'string') {
          try {
@@ -54,7 +54,8 @@ const createDish = async (rawBody) => {
          image: imagePath ,
          dish_status: true,
          default_characteristics: parseInt(default_characteristics),
-         characteristics
+         characteristics,
+         position
       }
       
       if(!CreateDishesSchema.check(dish).valid){

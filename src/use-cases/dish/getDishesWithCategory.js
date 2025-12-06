@@ -15,7 +15,8 @@ const getDishesByCategory = async () => {
             d.composition,
             d.image,
             d.default_characteristics,
-            d.characteristics
+            d.characteristics,
+            d.position
          FROM category c
          LEFT JOIN dish d ON c.id = d.categoryid
          ORDER BY c.id, d.id
@@ -39,7 +40,8 @@ const getDishesByCategory = async () => {
             dish_status, 
             composition, 
             default_characteristics,
-            characteristics, 
+            characteristics,
+            position, 
             image
          } = row;
 
@@ -63,7 +65,8 @@ const getDishesByCategory = async () => {
                quantity:1,
                image,
                default_characteristics,
-               characteristics
+               characteristics,
+               position
             };
             category.dishes.push(dishObj);
          }

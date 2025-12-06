@@ -8,18 +8,20 @@ const CreateDishesSchema = Schema.from({
   dish_status: 'boolean',
   image: 'string',
   characteristics: {array: {size:'string', price:'string', weight: 'string', measure: 'string'}},
-  default_characteristics: 'number'
+  default_characteristics: 'number',
+  position: 'number'
 
 })
 const UpdateDishesSchema = Schema.from({
-    id: '?number',
+    id: 'number',
     name: '?string',
-    categoryid: 'number',
-    composition: {array: 'string'},
-    description: 'string',
-    dish_status: 'boolean',
-    image: 'string',
-    characteristics: {array: {size:'string', price:'string', weight: 'string', measure: 'string'}},
-    default_characteristics: 'number'
+    categoryid: '?number',
+    '?composition': {array: 'string'},
+    description: '?string',
+    dish_status: '?boolean',
+    image: '?string',
+    '?characteristics': {array: {size:'string', price:'string', weight: 'string', measure: 'string'}},
+    default_characteristics: '?number',
+    position: '?number'
 })
 module.exports = { CreateDishesSchema, UpdateDishesSchema }

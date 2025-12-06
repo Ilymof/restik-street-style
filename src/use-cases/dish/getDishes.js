@@ -19,7 +19,7 @@ const getDishesByCategory = async () => {
             d.position
          FROM category c
          LEFT JOIN dish d ON c.id = d.categoryid
-         ORDER BY c.id, d.id
+         ORDER BY c.id, d.position
       `;
       const result = await safeDbCall(() => category.query(query));
 

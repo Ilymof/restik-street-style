@@ -18,7 +18,7 @@ CREATE TABLE dish (
     default_characteristics INTEGER DEFAULT 0,
     image VARCHAR(255),
     position INTEGER NOT NULL,
-    categoryid INT NOT NULL REFERENCES category(id) ON DELETE CASCADE
+    category_id INT NOT NULL REFERENCES category(id) ON DELETE CASCADE
 );
 
 INSERT INTO category (name, status, position) 
@@ -29,7 +29,7 @@ VALUES
 ('Напитки', TRUE, 4);
 
 -- Добавление по 3 блюда для каждой категории
-INSERT INTO dish (name, description, dish_status, composition, characteristics, default_characteristics, image, categoryid, position)
+INSERT INTO dish (name, description, dish_status, composition, characteristics, default_characteristics, image, category_id, position)
 VALUES
 -- Категория 1: Пицца (оставлено как есть с вариантами размеров в characteristics)
 ('Маргарита', 'Классическая пицца с томатным соусом и моцареллой', TRUE, ARRAY['Томатный соус', 'Моцарелла', 'Базилик'], '[{"size": "30 СМ", "price": "450", "quantity": "250", "measure": "г"}, {"size": "40 СМ", "price": "550", "quantity": "350", "measure": "г"}]'::JSONB, 0, 'margherita.jpg', 1, 1),

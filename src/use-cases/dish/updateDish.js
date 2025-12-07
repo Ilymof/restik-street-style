@@ -16,7 +16,7 @@ const updateDish = async (rawBody) => {
       const imageFile = files.find(f => f.name === 'image') 
       const imagePath = imageFile ? imageFile.filename : null
       
-      let {id, name, description, composition, categoryid, dish_status, default_characteristics, characteristics, position } = fields
+      let {id, name, description, composition, category_id, dish_status, default_characteristics, characteristics, position } = fields
 
       const existing_dish = await safeDbCall(() => dishes.read(id))
     
@@ -70,7 +70,7 @@ const updateDish = async (rawBody) => {
          ...(name && { name }), 
          ...(description !== undefined && { description }),
          ...(composition && { composition }),
-         ...(categoryid && { categoryid: parseInt(categoryid) }),
+         ...(category_id && { category_id: parseInt(category_id) }),
          ...(dish_status && { dish_status: parseBoolean(dish_status)}),
          ...(characteristics && {characteristics}),
          ...(default_characteristics && {default_characteristics: parseInt(default_characteristics)}),

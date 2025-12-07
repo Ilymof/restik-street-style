@@ -2,7 +2,7 @@ const { Schema } = require('metaschema')
 
 const CreateDishesSchema = Schema.from({
   name: 'string',
-  categoryid: 'number',
+  category_id: 'number',
   composition: { array: 'string'},
   description: 'string',
   dish_status: 'boolean',
@@ -15,7 +15,7 @@ const CreateDishesSchema = Schema.from({
 const UpdateDishesSchema = Schema.from({
     id: 'number',
     name: '?string',
-    categoryid: '?number',
+    category_id: '?number',
     'composition?': {array: 'string'},
     description: '?string',
     dish_status: '?boolean',

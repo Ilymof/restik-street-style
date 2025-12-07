@@ -20,7 +20,7 @@ const deleteDish = async (args) => {
       if (dish.length < 1) {
          throwValidationError(`Не существует блюда с id ${dishId}`)
       }
-      console.log(dish[0].image);
+      const imageName = dish[0].image
       
       if (dish[0].image && dish[0].image.length > 0) {
             const filePath = path.join(__dirname, '../../../uploads', dish[0].image)
@@ -30,7 +30,9 @@ const deleteDish = async (args) => {
                await fs.access(filePath)
                await fs.unlink(filePath)
             } catch (err) {
-               throwValidationError('Ошибка при удалении фото')
+               if (err.code === 'ENOENT') {
+                  console.log(`Фото не найдено на диске, пропускаем: ${imageName}`)
+               }else{throwValidationError('Ошибка при удалении фото')}  
             }
          }
 

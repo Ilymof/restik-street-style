@@ -7,7 +7,7 @@ const CreateDishesSchema = Schema.from({
   description: 'string',
   dish_status: 'boolean',
   image: 'string',
-  characteristics: {array: {size:'string', price:'string', weight: 'string', measure: 'string'}},
+  characteristics: {array: {size:'string', price:'string', quantity: 'string', measure: 'string'}},
   default_characteristics: 'number',
   position: 'number'
 
@@ -20,7 +20,7 @@ const UpdateDishesSchema = Schema.from({
     description: '?string',
     dish_status: '?boolean',
     image: '?string',
-    characteristics: {array: {size:'string', price:'string', weight: 'string', measure: 'string'},  required: false},
+    characteristics: {array: {size:'string', price:'string', quantity: 'string', measure: 'string'},  required: false},
     default_characteristics: '?number',
     position: '?number'
 })

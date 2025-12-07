@@ -36,8 +36,7 @@ const deleteDish = async (args) => {
             }
          }
 
-      await safeDbCall(() => dishes.delete(dishId))
-      console.log("Блюдо было удаленно")
+      return await safeDbCall(() => dishes.delete(dishId))
 }
 
 module.exports = deleteDish

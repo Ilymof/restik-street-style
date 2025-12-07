@@ -43,7 +43,7 @@ const updateDish = async (rawBody) => {
                characteristics = characteristics.map(char => ({
                   size: char.size,
                   price: char.price,  
-                  weight: char.weight, 
+                  quantity: char.quantity, 
                   measure: char.measure
                }));
             }

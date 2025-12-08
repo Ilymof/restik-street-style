@@ -41,13 +41,20 @@ const createCategories = async (rawBody) => {
     })
     .join(', ')
 
-  const sql = `
+  const insertSql = `
     INSERT INTO category (name, status, position)
     VALUES ${placeholders}
     RETURNING id, name, status, position;
   `
 
-  const result = await category.query(sql, values)
+  await category.query(insertSql, values)
+
+  const selectSql = `
+    SELECT id, name, status, position
+    FROM category
+    ORDER BY position ASC, id ASC;
+  `
+  const result = await category.query(selectSql)
   return result.rows
 }
 

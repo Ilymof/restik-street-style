@@ -90,7 +90,6 @@ const createOrder = async (args, req) => {
   };
 
   if(!deliveryObj.address.toLowerCase().includes('сухум') && deliveryObj.status === true){
-    totalPrice += 300
     deliveryObj.delivery_price = 300
   }
 
@@ -104,7 +103,7 @@ const createOrder = async (args, req) => {
     name: args.name,
     phone: args.phone,
     dishes: JSON.stringify(orderedDishes),
-    total_price: totalPrice,
+    total_price: totalPrice + deliveryObj.delivery_price,
     order_status,
     current_status: order_status.proccessing,
     delivery: JSON.stringify(deliveryObj),

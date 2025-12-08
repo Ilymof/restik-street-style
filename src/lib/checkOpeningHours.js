@@ -51,8 +51,6 @@ async function checkOpeningHours() {
 
     const openMin  = timeToMinutes(opensStr);
     const closeMin = timeToMinutes(closesStr);
-    console.log(openMin + "and" + closeMin);
-    
 
     let isOpen;
     if (closeMin <= openMin) {
@@ -63,7 +61,6 @@ async function checkOpeningHours() {
 
     cached = isOpen;
     cachedAt = now;
-    console.log(isOpen);
     
     return isOpen;
 

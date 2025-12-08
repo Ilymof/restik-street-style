@@ -45,6 +45,8 @@ const createDish = async (rawBody) => {
             throwValidationError(`Неверный JSON в characteristics: ${e.message}`);
          }
       }
+      console.log(category_id, position, default_characteristics);
+      
       
       const dish = {
          name, 
@@ -63,15 +65,16 @@ const createDish = async (rawBody) => {
       }
 
       dish.characteristics = JSON.stringify(characteristics)
-      const result = (await safeDbCall(() => dishes.create(dish)))
+      let result = []
 
       if (imageFile) {
                const FilePath = path.join(__dirname, '../../../uploads', imageFile.filename);
                try {
                   await fs.writeFile(FilePath, imageFile.data);
+                  result = await safeDbCall(() => dishes.create(dish))
                   console.log('New file written:', FilePath);
                } catch (err) {
-                  throwValidationError('Ошибка при записи нового фото');
+                  throwValidationError('Ошибка при записи нового фото', err.message);
                }
             }
       return result

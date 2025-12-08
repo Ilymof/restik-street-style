@@ -15,12 +15,32 @@ const accessOrder = async (id, status) => {
       const order = {
         current_status: status,   
       }
-      const result = await safeDbCall(() => orders.update(id, order));
+
+       await safeDbCall(() => orders.update(id, order));
+      const sql = `
+        SELECT 
+        id,
+        phone,
+        name,
+        dishes,
+        total_price,
+        current_status,
+        delivery,
+        cutlery_status,
+        cutlery_quantity,
+        order_comment,
+        created_at,
+        secret_key
+        FROM orders
+        WHERE id = $1
+        `
+      const result = await safeDbCall(() => orders.query(sql, [id]))
+         
       if (!result) {
          throwValidationError('Ошибка при обновлении заказа');
       }
 
-      return result 
+      return result.rows 
 };
 
 module.exports = accessOrder;

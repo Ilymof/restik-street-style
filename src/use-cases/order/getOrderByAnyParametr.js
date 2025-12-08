@@ -7,7 +7,20 @@ const { createCondition } = require('../../lib/queryConditions')
 const SqlQueryBuilder = require('../../lib/SqlQueryBuilder')
 
 const readSql = `
-    SELECT * FROM orders o
+    SELECT 
+      id,
+      phone,
+      name,
+      dishes,
+      total_price,
+      current_status,
+      delivery,
+      cutlery_status,
+      cutlery_quantity,
+      order_comment,
+      created_at,
+      secret_key 
+      FROM orders o
 `
 const getOrderWhereParametr = async (queryParams) => {
     const conditions = [

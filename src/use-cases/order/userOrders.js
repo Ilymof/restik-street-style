@@ -7,7 +7,20 @@ const safeDbCall = require('../../lib/safeDbCall')
 const userOrders = async (secret_key) => {
     
     const sql = `
-        SELECT * FROM orders
+        SELECT 
+        id,
+        phone,
+        name,
+        dishes,
+        total_price,
+        current_status,
+        delivery,
+        cutlery_status,
+        cutlery_quantity,
+        order_comment,
+        created_at,
+        secret_key
+        FROM orders
         WHERE secret_key = $1
     ORDER BY 
       CASE 

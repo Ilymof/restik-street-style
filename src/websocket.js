@@ -77,15 +77,18 @@ module.exports = (httpServer) => {
       const list = await getOrderByStatus();
       send(ws, { type: "orders", changeType: "updated",orders: list });
     }, 
+
     async "update-status"(ws, info, data) {
       const { id, status } = data.action || {};
+
       if (!id || !status) {
         send(ws, { type: 'error', message: 'Missing id or status in action' });
         return;
       }
       if (info.role !== 'admin') throwValidationError('Admin token required');
-      const acceptedOrder = await accessOrder(id, status);
-      send(ws, { type: "orders", changeType: "update_status",orders: acceptedOrder });
+      const result = await accessOrder(id, status);
+      const updatedOrder = result[0]
+      await httpServer.notifyOrdersUpdate('update_status', result, updatedOrder.secret_key);
     }
 
   };

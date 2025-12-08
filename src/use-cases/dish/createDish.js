@@ -52,18 +52,18 @@ const createDish = async (rawBody) => {
          name, 
          description,
          composition,
-         category_id: parseInt(category_id),
-         image: imagePath ,
+         category_id: category_id ? parseInt(category_id) : undefined,
+         image: imageFile ? imagePath : undefined,
          dish_status: true,
-         default_characteristics: parseInt(default_characteristics),
+         default_characteristics: default_characteristics ? parseInt(default_characteristics) : undefined,
          characteristics,
-         position: parseInt(position)
+         position: position ? parseInt(position) : undefined
       }
       
       if(!CreateDishesSchema.check(dish).valid){
-         throwValidationError(CreateDishesSchema.check(dish).errors[0])
+      throwValidationError(CreateDishesSchema.check(dish).errors[0])
       }
-
+      
       dish.characteristics = JSON.stringify(characteristics)
       let result = []
 

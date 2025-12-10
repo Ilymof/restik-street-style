@@ -8,8 +8,6 @@ const ROLES = {
 
 const ACCESS_CONTROL = {
 
-   '/api/admin/access-order': [ROLES.USER, ROLES.ADMIN, ROLES.SUPER_USER],
-
    '/api/auth/read': [ROLES.SUPER_USER],
 
    '/api/orders/read-all': [ROLES.ADMIN,ROLES.SUPER_USER],

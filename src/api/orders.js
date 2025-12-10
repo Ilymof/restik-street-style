@@ -23,14 +23,6 @@ module.exports = {
   'read-by-filter': async (args) =>{
     return await getByFilter(args)
   },
-
-  read: async ({ id }) => {
-    if (!Number(id)) {
-      throwValidationError('id должен быть числом')
-    }
-    return await safeDbCall(() => orders.read(id))
-  },
-
   create: async (rawBody, req) => {
     if(!await checkOpeningHours())
       {

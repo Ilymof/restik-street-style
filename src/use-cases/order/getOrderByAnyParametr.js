@@ -24,6 +24,7 @@ const readSql = `
 `
 const getOrderWhereParametr = async (queryParams) => {
     const conditions = [
+         (p) => p.id && createCondition('o.id', '=', p.id),
          (p) => p.phone && createCondition('o.phone', '=', p.phone),
          (p) => p.name && createCondition('o.name', '=', p.name),
          (p) => p.minCash && createCondition('o.total_price', '>=', p.minCash),

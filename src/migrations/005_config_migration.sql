@@ -8,5 +8,5 @@ CREATE TABLE config (
 );
 
 INSERT INTO config(opens_at, closes_at, price_list) 
-VALUES ('10:00', '23:00', '[{"delivery_price": 150,"order_price": 1000,  "city": "Сухум"}]')
+VALUES ('10:00', '23:00', null)
 ON CONFLICT (id) DO NOTHING;

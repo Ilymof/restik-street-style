@@ -8,8 +8,8 @@ const deleteDish = require('../use-cases/dish/deleteDish.js')
 const updateDish = require('../use-cases/dish/updateDish.js')
 const getDishes = require('../use-cases/dish/getDishes.js')
 module.exports = {
-   'read-all': async () =>{
-      return await getDishes()    
+   'read-all': async (data) =>{
+      return await getDishes(data)    
    },
 
    read: async ({ id }) => {

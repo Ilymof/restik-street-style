@@ -3,6 +3,7 @@ const db = require('../../db')
 const safeDbCall = require('../../lib/safeDbCall')
 const config = db('config')
 const {invalidateOpeningHoursCache} = require('../../lib/checkOpeningHours')
+const throwValidationError = require('../../lib/ValidationError')
 
 const changeWorkTime = async (args) => {
     const {opens_at, closes_at} = args

@@ -45,8 +45,6 @@ const createDish = async (rawBody) => {
             throwValidationError(`Неверный JSON в characteristics: ${e.message}`);
          }
       }
-      console.log(category_id, position, default_characteristics);
-      
       
       const dish = {
          name, 

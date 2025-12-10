@@ -1,6 +1,7 @@
 'use strict'
 const db = require('../../db')
 const orders = db('orders')
+const config = db('config')
 const dishes = db('dish')
 const throwValidationError = require('../../lib/ValidationError')
 const safeDbCall = require('../../lib/safeDbCall')
@@ -79,18 +80,44 @@ const createOrder = async (args, req) => {
     totalPrice += dishPrice
   }
 
+  const price_list_array = await safeDbCall(() => config.read())
+  const price_list = price_list_array[0].price_list
 
-  const {status = false, address = '', comment = ''} = args.delivery || {}
+const {status = false, address = '', comment = ''} = args.delivery || {}
+  const addressLower = address.toLowerCase().trim()
+
+  let current_delivery_price = 0
+
+  let matchedRules = price_list.filter(rule => 
+    rule.city && typeof rule.city === 'string' && addressLower.includes(rule.city.toLowerCase())
+  )
+
+  if (matchedRules.length === 0) {
+    matchedRules = price_list.filter(rule => rule.city === null)
+  }
+
+  if (matchedRules.length === 0) {
+    throwValidationError('Доставка в ваш регион недоступна')
+  }
+
+  matchedRules.sort((a, b) => {
+    if (a.order_price === null) return 1
+    if (b.order_price === null) return -1
+    return (b.order_price || 0) - (a.order_price || 0)
+  })
+
+  for (const rule of matchedRules) {
+    if (rule.order_price === null || totalPrice >= rule.order_price) {
+      current_delivery_price = rule.delivery_price || 0
+      break  
+    }
+  }
 
   const deliveryObj = {
-      status,
-      address: status ? address : '',
-      comment: status ? comment : '',
-      delivery_price: status ? 150 : 0
-  };
-
-  if(!deliveryObj.address.toLowerCase().includes('сухум') && deliveryObj.status === true){
-    deliveryObj.delivery_price = 300
+    status,
+    address: status ? address.trim() : '',
+    comment: status ? comment : '',
+    delivery_price: status ? current_delivery_price : 0
   }
 
   const order_status = {
@@ -103,7 +130,7 @@ const createOrder = async (args, req) => {
     name: args.name,
     phone: args.phone,
     dishes: JSON.stringify(orderedDishes),
-    total_price: totalPrice + deliveryObj.delivery_price,
+    total_price: totalPrice + current_delivery_price,
     order_status,
     current_status: order_status.proccessing,
     delivery: JSON.stringify(deliveryObj),
@@ -119,5 +146,4 @@ const createOrder = async (args, req) => {
   }
   return result
 }
-
 module.exports = createOrder

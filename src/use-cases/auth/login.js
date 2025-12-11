@@ -21,11 +21,6 @@ async function login(args,res) {
       throwValidationError('Неверный пароль');
     }
 
-    const exist_token = await TokenStorage.getByUsernameToken(username)
-    if (exist_token) {
-      await TokenStorage.deleteToken(username);
-    }
-
     const admin_id = admin.rows[0].id;
     const role = admin.rows[0].role;
     const payload = { admin_id, username, role };

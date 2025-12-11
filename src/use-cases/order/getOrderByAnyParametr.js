@@ -35,33 +35,60 @@ const getOrderWhereParametr = async (queryParams) => {
          (p) => p.size && createCondition('o.dishes', '@>', JSON.stringify([{size: p.size}])),
      ]
 
-     const activeConditions = conditions.map(fn => fn(queryParams)).filter(Boolean)
-     const whereClause = activeConditions.length 
+     const activeConditions = conditions.map(fn => fn(queryParams)).filter(Boolean);
+    const whereClause = activeConditions.length 
         ? `WHERE ${activeConditions.map((_, i) => _.sql.replace('?', `$${i + 1}`)).join(' AND ')}` 
-        : ''
-     const values = activeConditions.map(c => c.value)
-  
-     const { sql: dataSql, values: dataValues } = new SqlQueryBuilder(readSql)
+        : '';
+
+    const values = activeConditions.map(c => c.value);
+
+    const { sql: dataSql, values: dataValues } = new SqlQueryBuilder(readSql)
         .createWhere(conditions, queryParams)
         .createOrder('o.created_at', 'DESC')
-        .end()
-  
-     const countSql = `
+        .end();
+
+    const countSql = `
         SELECT COUNT(*) as total 
         FROM orders o
         ${whereClause}
-     `.trim()
-  
-     const [dataResult, countResult] = await Promise.all([
+    `.trim();
+
+    const [dataResult, countResult] = await Promise.all([
         safeDbCall(() => orders.query(dataSql, dataValues)),
         safeDbCall(() => orders.query(countSql, values))
-     ])
-  
-     return {
-        orders: dataResult.rows,
-        total: parseInt(countResult.rows[0].total)
-     }
-   }
- 
+    ]);
+
+    const ordersList = dataResult.rows;
+
+    // Основной результат
+    const result = {
+        orders: ordersList,
+        total: parseInt(countResult.rows[0]?.total || 0)
+    };
+
+    // Добавляем статистику по блюду, если запрошен dishName
+    if (queryParams.dishName) {
+        let totalQuantity = 0;
+        let totalRevenue = 0;
+
+        for (const order of ordersList) {
+            for (const dish of order.dishes || []) {
+                if (dish.name === queryParams.dishName) {
+                    totalQuantity += Number(dish.quantity) || 0;
+                    totalRevenue += Number(dish.price) || 0; // price уже = цена_за_штуку × количество
+                }
+            }
+        }
+
+        result.dishStats = {
+            name: queryParams.dishName,
+            totalQuantity,
+            totalRevenue,
+            ordersCount: ordersList.length
+        };
+    }
+
+    return result;
+};
 
 module.exports = getOrderWhereParametr;

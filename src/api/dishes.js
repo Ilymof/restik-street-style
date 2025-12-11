@@ -7,6 +7,7 @@ const createDish = require('../use-cases/dish/createDish.js')
 const deleteDish = require('../use-cases/dish/deleteDish.js')
 const updateDish = require('../use-cases/dish/updateDish.js')
 const getDishes = require('../use-cases/dish/getDishes.js')
+const getDishStats = require('../use-cases/dish/dishStats.js')
 module.exports = {
    'read-all': async (data) =>{
       return await getDishes(data)    
@@ -27,4 +28,7 @@ module.exports = {
    async delete(args) {
       return await deleteDish(args)
    },
+   async "dish-stats" (query) {
+      return await getDishStats(query)
+   }
 }

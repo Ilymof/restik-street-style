@@ -60,35 +60,10 @@ const getOrderWhereParametr = async (queryParams) => {
 
     const ordersList = dataResult.rows;
 
-    // Основной результат
-    const result = {
+    return {
         orders: ordersList,
         total: parseInt(countResult.rows[0]?.total || 0)
     };
-
-    // Добавляем статистику по блюду, если запрошен dishName
-    if (queryParams.dishName) {
-        let totalQuantity = 0;
-        let totalRevenue = 0;
-
-        for (const order of ordersList) {
-            for (const dish of order.dishes || []) {
-                if (dish.name === queryParams.dishName) {
-                    totalQuantity += Number(dish.quantity) || 0;
-                    totalRevenue += Number(dish.price) || 0; // price уже = цена_за_штуку × количество
-                }
-            }
-        }
-
-        result.dishStats = {
-            name: queryParams.dishName,
-            totalQuantity,
-            totalRevenue,
-            ordersCount: ordersList.length
-        };
-    }
-
-    return result;
 };
 
 module.exports = getOrderWhereParametr;

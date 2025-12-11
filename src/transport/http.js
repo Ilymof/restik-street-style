@@ -39,13 +39,8 @@ const mimeTypes = {
     '.ico': 'image/x-icon'
 };
 
-// const allowedOrigins = [
-//     'https://apsny-billboard-production.up.railway.app',
-//     'http://localhost:8800',
-//     'http://83.222.18.3',
-//     'ws://localhost:8800'
-// ];
 
+// const allowedOrigin = 'https://cemubribepit.beget.app';
 module.exports = (routing, port) => {
     const server = http.createServer(async (req, res) => {
         // const origin = req.headers.origin;
@@ -54,9 +49,12 @@ module.exports = (routing, port) => {
         // } else {
         //     res.setHeader('Access-Control-Allow-Origin', '');
         // }
-        res.setHeader('Access-Control-Allow-Origin', '');
-        res.setHeader('Access-Control-Allow-Methods', '*');
-        res.setHeader('Access-Control-Allow-Headers', '*');
+        // Разрешаем только твой фронтенд (в продакшене — конкретный домен!)
+        
+
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, refresh-token, X-Requested-With');
         res.setHeader('Access-Control-Allow-Credentials', 'true');
 
         if (req.method === 'OPTIONS') {

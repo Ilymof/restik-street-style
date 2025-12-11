@@ -9,7 +9,7 @@ const safeDbCall = require('../../lib/safeDbCall.js')
 const throwValidationError = require('../../lib/ValidationError')
 
 async function logout(req) {
-    const refreshToken = req.headers.refreshToken || null;
+    const refreshToken = req.headers['refresh-token'] || null;
     
     const sql =`
       DELETE FROM tokens WHERE token = $1

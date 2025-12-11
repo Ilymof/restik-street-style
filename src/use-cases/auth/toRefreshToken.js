@@ -6,7 +6,7 @@ const PermissionError = require('../../lib/PermissionError')
 
 
 const toRefreshToken = async (req) => {
-   const refreshToken = req.headers.refresh_token || null;
+   const refreshToken = req.headers['refresh-token'] || null;
    let verified_token = null
    try{
       verified_token = await TokenService.verifyRefreshToken(refreshToken)

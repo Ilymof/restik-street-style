@@ -80,37 +80,41 @@ const createOrder = async (args, req) => {
     totalPrice += dishPrice
   }
 
-  const price_list_array = await safeDbCall(() => config.read())
-  const price_list = price_list_array[0].price_list
-
 const {status = false, address = '', comment = ''} = args.delivery || {}
-  const addressLower = address.toLowerCase().trim()
+const addressLower = address.toLowerCase().trim();
 
-  let current_delivery_price = 0
+let current_delivery_price = 0;
 
-  let matchedRules = price_list.filter(rule => 
-    rule.city && typeof rule.city === 'string' && addressLower.includes(rule.city.toLowerCase())
-  )
+const price_list_array = await safeDbCall(() => config.read());
+const citiesConfig = price_list_array[0].price_list || [];
 
-  if (matchedRules.length === 0) {
-    matchedRules = price_list.filter(rule => rule.city === null)
+let cityConfig = null;
+
+for (const cityRule of citiesConfig) {
+  if (cityRule.city && addressLower.includes(cityRule.city.toLowerCase())) {
+    cityConfig = cityRule;
+    break;
+  }
+}
+
+  if (!cityConfig) {
+    throwValidationError('Доставка в ваш регион недоступна');
   }
 
-  if (matchedRules.length === 0) {
-    throwValidationError('Доставка в ваш регион недоступна')
+  if (!Array.isArray(cityConfig.prices) || cityConfig.prices.length === 0) {
+    throwValidationError('Не настроены цены доставки для вашего города');
   }
 
-  matchedRules.sort((a, b) => {
-    if (a.order_price === null) return 1
-    if (b.order_price === null) return -1
-    return (b.order_price || 0) - (a.order_price || 0)
-  })
+  const suitableRange = cityConfig.prices.find(range => {
+    const from = Number(range.from) || 0;
+    const to = range.to === null || range.to === undefined ? Infinity : Number(range.to);
+    return totalPrice >= from && totalPrice < to;
+  });
 
-  for (const rule of matchedRules) {
-    if (rule.order_price === null || totalPrice >= rule.order_price) {
-      current_delivery_price = rule.delivery_price || 0
-      break  
-    }
+  if (!suitableRange) {
+    current_delivery_price = cityConfig.prices[cityConfig.prices.length - 1].price;
+  } else {
+    current_delivery_price = suitableRange.price;
   }
 
   const deliveryObj = {

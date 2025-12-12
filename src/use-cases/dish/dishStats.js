@@ -7,22 +7,23 @@ const dishStats = async (query) => {
   let { from, to, dishName } = query;
 
   const params = [];
-  let whereClause = '';
+  let whereClause = 'WHERE o.current_status = \'Готов\''; // ВАЖНО: только завершённые заказы
 
+  // Добавляем фильтр по датам
   if (from || to) {
-    whereClause = 'WHERE ';
     if (from) {
       params.push(from);
-      whereClause += `o.created_at::date >= $${params.length}`;
+      whereClause += ` AND o.created_at::date >= $${params.length}`;
     }
-    if (from && to) whereClause += ' AND ';
     if (to) {
       params.push(to);
-      whereClause += `o.created_at::date <= $${params.length}`;
+      whereClause += ` AND o.created_at::date <= $${params.length}`;
     }
+  } else {
+    // Если даты не указаны — всё равно как и без условия, но с учётом статуса
+    whereClause = 'WHERE o.current_status = \'Готов\'';
   }
 
-  // Основной запрос: блюдо + сколько заказов его содержат
   let sql = `
     SELECT 
       dish->>'name' as name,
@@ -34,9 +35,9 @@ const dishStats = async (query) => {
     ${whereClause}
   `;
 
+  // Фильтр по названию блюда
   if (dishName) {
-    const andPart = whereClause ? ' AND ' : ' WHERE ';
-    sql += `${andPart} dish->>'name' = $${params.length + 1}`;
+    sql += ` AND dish->>'name' = $${params.length + 1}`;
     params.push(dishName);
   }
 
@@ -57,14 +58,17 @@ const dishStats = async (query) => {
   const period = {
     from: from || null,
     to: to || null,
-    description: !from && !to ? 'за всё время' :
-                 from && to ? `с ${from} по ${to}` :
-                 from ? `с ${from} по сегодня` : `до ${to}`
+    description: !from && !to 
+      ? 'за всё время' 
+      : from && to 
+        ? `с ${from} по ${to}` 
+        : from 
+          ? `с ${from} по сегодня` 
+          : `до ${to}`
   };
 
-  // Если запрашивали одно блюдо
   if (dishName) {
-    const found = result[0]; // уже отсортировано, первое — нужное
+    const found = result[0];
     return {
       period,
       dish: found || {
@@ -76,11 +80,10 @@ const dishStats = async (query) => {
     };
   }
 
-  // Если без фильтра — все блюда
   return {
     period,
     dishes: result
   };
 };
 
-module.exports = dishStats
+module.exports = dishStats;

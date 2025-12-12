@@ -25,7 +25,7 @@ const validateSizeForDish = (inputSize, dish) => {
 }
 
 const createOrder = async (args, req) => {
-  args.secret_key = req.headers.secret_key ? req.headers.secret_key : null
+  args.secret_key = req.headers['secret-key'] ? req.headers['secret-key'] : null
   if (!CreateOrderSchema.check(args).valid){
      throwValidationError(CreateOrderSchema.check(args).errors[0])
     }   

@@ -4,7 +4,7 @@ const CreateOrderSchema = Schema.from({
     name: 'string',
     phone: 'string',
     delivery:{status: 'boolean',address: 'string',comment: '?string', delivery_price: '?number'},
-    dishes: {array: {id: 'number',quantity: 'number', size: '?string'}, required: true },
+    dishes: {array: {id: 'number',quantity: 'number', size: 'string'}, required: true },
     cutlery_status: 'boolean',
     cutlery_quantity:'?number', 
     order_comment: '?string' ,

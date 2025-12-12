@@ -6,7 +6,7 @@ const token = db('tokens')
 module.exports = {
    async setToken(username, role, refreshToken) {
       const expiresAt = new Date()
-      expiresAt.setDate(expiresAt.getDate() + 7)
+      expiresAt.setDate(expiresAt.getDate() + 30)
       const sql = `
     INSERT INTO tokens (username, role, token, expires_at)
         VALUES ($1, $2, $3, $4)

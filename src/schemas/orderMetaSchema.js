@@ -8,6 +8,7 @@ const CreateOrderSchema = Schema.from({
     cutlery_status: 'boolean',
     cutlery_quantity:'?number', 
     order_comment: '?string' ,
+    created_at: '?string',
     secret_key: 'string'
 })
 const UpdateOrderSchema = Schema.from({

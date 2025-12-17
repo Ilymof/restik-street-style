@@ -48,8 +48,6 @@ const updateCategories = async (rawBody) => {
     }
   });
 
-  let resultRows = [];
-
   // INSERT новых
   if (toInsert.length > 0) {
     const insertValues = [];
@@ -65,8 +63,8 @@ const updateCategories = async (rawBody) => {
       RETURNING id, name, status, position;
     `;
 
-    const insertRes = await category.query(insertSql, insertValues);
-    resultRows = resultRows.concat(insertRes.rows);
+    await category.query(insertSql, insertValues);
+
   }
 
   // UPDATE существующих
@@ -90,8 +88,7 @@ const updateCategories = async (rawBody) => {
       RETURNING c.id, c.name, c.status, c.position;
     `;
 
-    const updateRes = await category.query(updateSql, updateValues);
-    resultRows = resultRows.concat(updateRes.rows);
+    await category.query(updateSql, updateValues);
   }
 
   const finalSql = `

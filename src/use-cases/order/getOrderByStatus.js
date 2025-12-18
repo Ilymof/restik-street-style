@@ -32,7 +32,7 @@ const getOrderByStatus = async () => {
     `
     const result = await safeDbCall(() => orders.query(sql, []))
     if (!result || result.rows.length<1){
-        throwValidationError('нет заказов')
+       return []
     }
     return result.rows
 }

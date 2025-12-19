@@ -19,7 +19,6 @@ const ACCESS_CONTROL = {
    
    '/api/cfg/change-time': [ROLES.ADMIN, ROLES.SUPER_USER],
    '/api/cfg/update-price-list': [ROLES.ADMIN, ROLES.SUPER_USER],
-   '/api/cfg/read': [ROLES.ADMIN, ROLES.SUPER_USER],
 
    
    

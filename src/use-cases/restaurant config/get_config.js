@@ -19,7 +19,7 @@ const getConfig = async () => {
       if (!result) {
          throw new Error('Ошибка при получении конфигурационных данных')
       }
-      return result.rows[0] 
+      return result.rows
 }
 
 module.exports = getConfig 

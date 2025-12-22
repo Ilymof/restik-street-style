@@ -1,7 +1,7 @@
 const throwValidationError = require('../../lib/ValidationError');
 const db = require('../../db')
 const push_subscriptions = db('push_subscriptions')
-const TokenService = require('../../services/auth/JWTService');
+const jwt = require('jsonwebtoken')
 const removeBearer = require('../../lib/removeBearer')
 
 function mapRowToSubscription(row) {
@@ -87,7 +87,7 @@ async function subscribeClient (rawBody,req) {
     let decoded = null
     let adminUsername = null
     if (token){
-      decoded = TokenService.verifyAccessToken(token);
+      decoded = jwt.decode(token);
       adminUsername = decoded.username
     }
     

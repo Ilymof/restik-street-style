@@ -1,5 +1,5 @@
 const throwValidationError = require('../../lib/ValidationError');
-const db = require('../db')
+const db = require('../../db')
 const push_subscriptions = db('push_subscriptions')
 const TokenService = require('../../services/auth/JWTService');
 

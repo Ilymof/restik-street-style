@@ -7,6 +7,9 @@ module.exports = {
    return await subscribe(req)
   },
   'public-key': async () =>{
-    return process.env.PUBLIC_KEY
+    let key = process.env.PUBLIC_KEY || '';
+    key = key.trim();  // убирает пробелы/переносы в начале и конце
+    key = key.replace(/[^A-Za-z0-9\-_]/g, '');
+    return key
   }
 }

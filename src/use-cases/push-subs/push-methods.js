@@ -78,7 +78,7 @@ async function deleteSubscription(endpoint) {
   );
 }
 
-async function subscribe (req) {
+async function subscribeClient (req) {
     const orderKey = req.headers['secret-key'] ? req.headers['secret-key'] : null
     const token = req.headers.authorization || null;
     const decoded = TokenService.verifyAccessToken(token);
@@ -103,5 +103,5 @@ module.exports = {
   getSubscriptionsByOrderKey,
   getAllAdminSubscriptions,
   deleteSubscription,
-  subscribe
+  subscribeClient
 };

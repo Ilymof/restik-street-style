@@ -80,9 +80,8 @@ async function deleteSubscription(endpoint) {
 
 async function subscribeClient (rawBody,req) {
   const subscription = rawBody
-    //const orderKey = req.headers['secret-key'] ? req.headers['secret-key'] : null
-   const orderKey = 'ZHTmHClRWXlf2Ls573WeE56lRnDyrv5Xcw1PljuRwG0='
-    const token = req.headers.authorization || null;
+  const orderKey = localStorage.getItem('orderSecretKey');  // для гостя
+  const token = localStorage.getItem('accessToken');
     let decoded = null
     let adminUsername = null
     if (token){

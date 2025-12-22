@@ -80,7 +80,7 @@ async function deleteSubscription(endpoint) {
 }
 
 async function subscribeClient (rawBody,req) {
-  const subscription = rawBody
+    const subscription = rawBody
     const orderKey = req.headers['secret-key'] ? req.headers['secret-key'] : null
     const token = removeBearer(req.headers.authorization) || null;
 
@@ -91,17 +91,18 @@ async function subscribeClient (rawBody,req) {
       adminUsername = decoded.username
     }
     
- 
+    
 
     if (adminUsername) {
       await saveAdminSubscription(subscription, adminUsername)
+      await saveGuestSubscription(subscription, orderKey)
       return { success: true }
     }
-
     if (orderKey) {
       await saveGuestSubscription(subscription, orderKey)
       return { success: true }
     }
+    
 
     throwValidationError('No valid identification for push subscription')
   }

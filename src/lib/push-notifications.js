@@ -14,11 +14,22 @@ webpush.setVapidDetails(
 );
 
 async function sendPush(subscriptions, payload) {
+  if (subscriptions.length === 0) {
+    console.log('Нет подписок для отправки push: ', subscriptions);
+    return;
+  }
+
+  console.log(`Отправка push ${subscriptions.length} подписчикам`);
+
   for (const sub of subscriptions) {
     try {
+      // ← Вот сюда добавляем третий параметр с опциями
       await webpush.sendNotification(sub, payload);
+      console.log('Push успешно отправлен');
     } catch (err) {
+      console.error('Ошибка отправки push:', err.statusCode, err.message);
       if (err.statusCode === 410 || err.statusCode === 404) {
+        console.log('Удаляем устаревшую подписку');
         await deleteSubscription(sub.endpoint);
       }
     }

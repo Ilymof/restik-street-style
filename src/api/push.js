@@ -8,8 +8,12 @@ module.exports = {
   },
   'public-key': async () =>{
     let key = process.env.PUBLIC_KEY || '';
-    key = key.trim();  // убирает пробелы/переносы в начале и конце
-    key = key.replace(/[^A-Za-z0-9\-_]/g, '');
+    key = key.trim();
+    if (key.startsWith('"') && key.endsWith('"')) {
+      key = key.slice(1, -1);
+    }
+
+    key = key.replace(/[^A-Za-z0-9\-_]/g, ''); 
     return key
   }
 }

@@ -18,13 +18,12 @@ async function saveGuestSubscription(subscription, orderKey) {
   const { endpoint, keys: { p256dh, auth } } = subscription;
 
   const sql = `
-    INSERT INTO push_subscriptions (endpoint, p256dh, auth, order_key, admin_username)
-    VALUES ($1, $2, $3, $4, NULL)
+    INSERT INTO push_subscriptions (endpoint, p256dh, auth, order_key)
+    VALUES ($1, $2, $3, $4)
     ON CONFLICT (endpoint) DO UPDATE
     SET p256dh = EXCLUDED.p256dh,
         auth = EXCLUDED.auth,
-        order_key = EXCLUDED.order_key,
-        admin_username = NULL
+        order_key = EXCLUDED.order_key
     RETURNING id
   `;
 
@@ -36,13 +35,12 @@ async function saveAdminSubscription(subscription, adminUsername) {
   const { endpoint, keys: { p256dh, auth } } = subscription;
 
   const sql = `
-    INSERT INTO push_subscriptions (endpoint, p256dh, auth, admin_username, order_key)
-    VALUES ($1, $2, $3, $4, NULL)
+    INSERT INTO push_subscriptions (endpoint, p256dh, auth, admin_username)
+    VALUES ($1, $2, $3, $4)
     ON CONFLICT (endpoint) DO UPDATE
     SET p256dh = EXCLUDED.p256dh,
         auth = EXCLUDED.auth,
-        admin_username = EXCLUDED.admin_username,
-        order_key = NULL
+        admin_username = EXCLUDED.admin_username
     RETURNING id
   `;
 
@@ -97,7 +95,6 @@ async function subscribeClient (rawBody,req) {
 
     if (adminUsername) {
       await saveAdminSubscription(subscription, adminUsername)
-      await saveGuestSubscription(subscription, orderKey)
       return { success: true }
     }
     if (orderKey) {

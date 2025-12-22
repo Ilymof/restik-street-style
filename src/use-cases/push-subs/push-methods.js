@@ -83,13 +83,15 @@ async function subscribeClient (rawBody,req) {
     const subscription = rawBody
     const orderKey = req.headers['secret-key'] ? req.headers['secret-key'] : null
     const token = removeBearer(req.headers.authorization) || null;
-
+    console.log(token);
+    
     let decoded = null
     let adminUsername = null
     if (token){
       decoded = jwt.decode(token);
       adminUsername = decoded.username
     }
+    console.log(adminUsername);
     
     
 

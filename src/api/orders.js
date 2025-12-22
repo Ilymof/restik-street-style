@@ -35,6 +35,7 @@ module.exports = {
     const secretKey = newOrder.secret_key
     req.server.notifyOrdersUpdate('added', newOrderArray, secretKey)
     try {
+        console.log("Пробую прислать уведомление", "-> newOrder.secret_key:",newOrder.secret_key);
         await notifyAdmins(
           `Новый заказ`,
           `Пришёл новый заказ от ${newOrder.name} на сумму ${newOrder.total_price}`,

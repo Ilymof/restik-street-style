@@ -2,6 +2,7 @@ const throwValidationError = require('../../lib/ValidationError');
 const db = require('../../db')
 const push_subscriptions = db('push_subscriptions')
 const TokenService = require('../../services/auth/JWTService');
+const removeBearer = require('../../lib/removeBearer')
 
 function mapRowToSubscription(row) {
   return {
@@ -81,7 +82,8 @@ async function deleteSubscription(endpoint) {
 async function subscribeClient (rawBody,req) {
   const subscription = rawBody
     const orderKey = req.headers['secret-key'] ? req.headers['secret-key'] : null
-    const token = req.headers.authorization || null;
+    const token = removeBearer(req.headers.authorization) || null;
+
     let decoded = null
     let adminUsername = null
     if (token){

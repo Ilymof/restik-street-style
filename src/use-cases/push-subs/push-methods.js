@@ -81,8 +81,14 @@ async function deleteSubscription(endpoint) {
 async function subscribeClient (req) {
     const orderKey = req.headers['secret-key'] ? req.headers['secret-key'] : null
     const token = req.headers.authorization || null;
-    const decoded = TokenService.verifyAccessToken(token);
-    const adminUsername = decoded.username
+    let decoded = null
+    let adminUsername = null
+    if (token){
+      decoded = TokenService.verifyAccessToken(token);
+      adminUsername = decoded.username
+    }
+    
+ 
 
     if (adminUsername) {
       await saveAdminSubscription(subscription, adminUsername)

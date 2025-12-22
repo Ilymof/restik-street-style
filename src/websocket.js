@@ -2,6 +2,7 @@
 const WebSocket = require('ws');
 const TokenService = require('./services/auth/JWTService');
 const getOrderByStatus = require('./use-cases/order/getOrderByStatus');
+const {notifyGuest} = require('./lib/push-notifications.js')
 const userOrders = require('./use-cases/order/userOrders');
 const throwValidationError = require('./lib/ValidationError');
 const accessOrder = require('./use-cases/order/accessOrder.js');
@@ -89,6 +90,16 @@ module.exports = (httpServer) => {
       const result = await accessOrder(id, status);
       const updatedOrder = result[0]
       await httpServer.notifyOrdersUpdate('update_status', result, updatedOrder.secret_key);
+      try {
+        await notifyGuest(
+          updatedOrder.secret_key,
+          `Изменение статуса заказа`,
+          `Статус вашего заказа №${updatedOrder.id} поменялся на ${updatedOrder.current_status}`,
+          '/orders-history'
+        )
+      } catch (err) {
+        console.error('Не удалось отправить push админам:', err)
+      }
     }
 
   };

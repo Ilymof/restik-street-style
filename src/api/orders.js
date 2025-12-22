@@ -9,6 +9,7 @@ const updateOrder = require('../use-cases/order/updateOrder.js')
 const getByFilter = require('../use-cases/order/getOrderByAnyParametr.js') 
 const {UpdateOrderSchema} = require('../schemas/orderMetaSchema.js')
 const {checkOpeningHours} = require('../lib/checkOpeningHours.js')
+const { notifyAdmins} = require('../lib/push-notifications.js')
 const throwValidationError = require('../lib/ValidationError')
 const cleanOrders = require('../use-cases/order/autoOrderCleaner.js')
 
@@ -28,10 +29,20 @@ module.exports = {
       {
          throwValidationError('Доступ запрещен: время создания заказа ограничено по времени работы заведения') 
       }
+    
     const newOrderArray = await createOrder(rawBody, req)
     const newOrder = newOrderArray[0]
     const secretKey = newOrder.secret_key
     req.server.notifyOrdersUpdate('added', newOrderArray, secretKey)
+    try {
+        await notifyAdmins(
+          `Новый заказ`,
+          `Пришёл новый заказ от ${newOrder.name} на сумму ${newOrder.total_price}`,
+          '/admin-orders'
+        )
+      } catch (err) {
+        console.error('Не удалось отправить push админам:', err)
+      }
     return newOrderArray
   },
 

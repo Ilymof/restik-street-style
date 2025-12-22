@@ -79,7 +79,8 @@ async function deleteSubscription(endpoint) {
 }
 
 async function subscribeClient (req) {
-    const orderKey = req.headers['secret-key'] ? req.headers['secret-key'] : null
+    //const orderKey = req.headers['secret-key'] ? req.headers['secret-key'] : null
+   const orderKey = 'ZHTmHClRWXlf2Ls573WeE56lRnDyrv5Xcw1PljuRwG0='
     const token = req.headers.authorization || null;
     let decoded = null
     let adminUsername = null

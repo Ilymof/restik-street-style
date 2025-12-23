@@ -38,7 +38,7 @@ module.exports = {
         console.log("Пробую прислать уведомление", "-> newOrder.secret_key:",newOrder.secret_key);
         await notifyAdmins(
           `Новый заказ`,
-          `Пришёл новый заказ от ${newOrder.name} на сумму ${newOrder.total_price}`,
+          `Пришёл новый заказ от ${newOrder.name} на сумму ${newOrder.total_price} руб.`,
           '/admin-orders'
         )
       } catch (err) {

@@ -96,7 +96,7 @@ module.exports = (httpServer) => {
           updatedOrder.secret_key,
           `Изменение статуса заказа`,
           `Статус вашего заказа №${updatedOrder.id} поменялся на ${updatedOrder.current_status}`,
-          '/orders-history'
+          '/order-history'
         )
       } catch (err) {
         console.error('Не удалось отправить push админам:', err)

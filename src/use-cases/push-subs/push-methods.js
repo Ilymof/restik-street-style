@@ -92,18 +92,20 @@ async function subscribeClient (rawBody,req) {
     console.log(adminUsername);
     
     
+    if (!adminUsername && !orderKey) {
+        throwValidationError('No valid identification for push subscription');
+    }
 
     if (adminUsername) {
-      await saveAdminSubscription(subscription, adminUsername)
-      return { success: true }
+        await saveAdminSubscription(subscription, adminUsername);
     }
-    if (orderKey) {
-      await saveGuestSubscription(subscription, orderKey)
-      return { success: true }
-    }
-    
 
-    throwValidationError('No valid identification for push subscription')
+    if (orderKey) {
+        await saveGuestSubscription(subscription, orderKey);
+    }
+
+    return { success: true };
+  
   }
 
 module.exports = {

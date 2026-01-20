@@ -36,7 +36,7 @@ async function sendPush(subscriptions, payload) {
   }
 }
 
-async function notifyGuest(orderKey, title, body = '', url = '/order-histor') {
+async function notifyGuest(orderKey, title, body = '', url = '/order-history') {
   const subs = await getSubscriptionsByOrderKey(orderKey);
   const payload = JSON.stringify({ title, body, url });
   await sendPush(subs, payload);

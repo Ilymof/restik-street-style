@@ -97,7 +97,7 @@ for (const cityRule of citiesConfig) {
   }
 }
 
-  if (!cityConfig) {
+  if (!cityConfig && status) {
     throwValidationError('Доставка в ваш регион недоступна');
   }
 

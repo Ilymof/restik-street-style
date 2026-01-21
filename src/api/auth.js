@@ -6,6 +6,7 @@ const safeDbCall = require('../lib/safeDbCall.js')
 const loginAdmin = require('../use-cases/auth/login.js')
 const logout = require('../use-cases/auth/logout.js')
 const {toRefreshToken, check} = require('../use-cases/auth/toRefreshToken.js')
+const {deleteSubscription} = require('../use-cases/push-subs/push-methods')
 
 
 module.exports = {
@@ -26,7 +27,10 @@ module.exports = {
         return await check(accessToken)
     },
 
-   async logout(args, req) {
+    async logout(endpoint, req) {   
+        if(endpoint){
+            await deleteSubscription(endpoint)
+        }
         return await logout(req)
     }
 }

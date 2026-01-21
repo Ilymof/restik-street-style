@@ -1,8 +1,8 @@
 const { Schema } = require('metaschema')
 
 const CreateOrderSchema = Schema.from({
-    name: 'string',
-    phone: 'string',
+    name: { type: 'string', length: { min: 1 } },
+    phone: { type: 'string', length: { min: 1 } },
     delivery:{status: 'boolean',address: 'string',comment: '?string', delivery_price: '?number'},
     dishes: {array: {id: 'number',quantity: 'number', size: 'string'}, required: true },
     cutlery_status: 'boolean',

@@ -6,7 +6,7 @@ const throwValidationError = (message, detail = null, status = null) => {
     message: message,  
     detail: detail,
     status: status ? status : 400,
-    toClient: true,
+    toClient: false,
     toLogs: true
   });
 };

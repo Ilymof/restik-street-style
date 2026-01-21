@@ -1,7 +1,7 @@
 const throwValidationError = require('../../lib/ValidationError');
 const db = require('../../db')
 const push_subscriptions = db('push_subscriptions')
-const jwt = require('jsonwebtoken')
+const JWTService = require('../../services/auth/JWTService')
 const removeBearer = require('../../lib/removeBearer')
 
 function mapRowToSubscription(row) {
@@ -80,33 +80,39 @@ async function deleteSubscription(endpoint) {
 async function subscribeClient (rawBody,req) {
     const subscription = rawBody
     const orderKey = req.headers['secret-key'] ? req.headers['secret-key'] : null
-    const token = removeBearer(req.headers.authorization) || null;
-    console.log(token);
-    
-    let decoded = null
-    let adminUsername = null
-    if (token){
-      decoded = jwt.decode(token);
-      adminUsername = decoded.username
-    }
-    console.log(adminUsername);
-    
-    
-    if (!adminUsername && !orderKey) {
-        throwValidationError('No valid identification for push subscription');
-    }
-
-    if (adminUsername) {
-        await saveAdminSubscription(subscription, adminUsername);
-    }
 
     if (orderKey) {
         await saveGuestSubscription(subscription, orderKey);
+    } else{
+      throwValidationError('Пользовательский ключ отсутсвует')
     }
 
     return { success: true };
   
   }
+async function subscribeAdmin (rawBody,req) {
+  const subscription = rawBody
+  const token = removeBearer(req.headers.authorization) || null;
+  if (!token) {
+    throwValidationError('Токен авторизации отсутствует');
+  }
+  
+  let decoded = null
+  let adminUsername = null
+  if (token){
+    decoded = JWTService.verifyAccessToken(token);
+    adminUsername = decoded.username
+  }
+  
+  if (adminUsername) {
+    await saveAdminSubscription(subscription, adminUsername);
+  } else {
+    throwValidationError('Не найдено имя пользователя в токене')
+  }
+
+  return { success: true };
+
+}
 
 module.exports = {
   saveGuestSubscription,
@@ -114,5 +120,6 @@ module.exports = {
   getSubscriptionsByOrderKey,
   getAllAdminSubscriptions,
   deleteSubscription,
-  subscribeClient
+  subscribeClient,
+  subscribeAdmin
 };

@@ -122,7 +122,7 @@ for (const cityRule of citiesConfig) {
   const deliveryObj = {
     status,
     address: status ? address.trim() : '',
-    comment: comment,
+    comment: status ? comment : '',
     delivery_price: status ? current_delivery_price : 0
   }
 

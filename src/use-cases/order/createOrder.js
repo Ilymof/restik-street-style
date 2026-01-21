@@ -84,7 +84,7 @@ const {status = false, address = '', comment = ''} = args.delivery || {}
 const addressLower = address.toLowerCase().trim();
 
 let current_delivery_price = 0;
-
+if (status){
 const price_list_array = await safeDbCall(() => config.read());
 const citiesConfig = price_list_array[0].price_list || [];
 
@@ -97,7 +97,7 @@ for (const cityRule of citiesConfig) {
   }
 }
 
-  if (!cityConfig && status) {
+  if (!cityConfig) {
     throwValidationError('Доставка в ваш регион недоступна');
   }
 
@@ -116,11 +116,13 @@ for (const cityRule of citiesConfig) {
   } else {
     current_delivery_price = suitableRange.price;
   }
+}
+
 
   const deliveryObj = {
     status,
     address: status ? address.trim() : '',
-    comment: status ? comment : '',
+    comment: comment,
     delivery_price: status ? current_delivery_price : 0
   }
 

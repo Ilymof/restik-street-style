@@ -91,7 +91,6 @@ module.exports = (httpServer) => {
       const updatedOrder = result[0]
       await httpServer.notifyOrdersUpdate('update_status', result, updatedOrder.secret_key);
       try {
-      console.log("Пробую прислать уведомление", "-> updatedOrder.secret_key:",updatedOrder.secret_key);
         await notifyGuest(
           updatedOrder.secret_key,
           `Изменение статуса заказа`,

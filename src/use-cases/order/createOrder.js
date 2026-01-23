@@ -143,7 +143,6 @@ for (const cityRule of citiesConfig) {
     cutlery_status: args.cutlery_status,
     cutlery_quantity: args.cutlery_status ? args.cutlery_quantity : 0,
     order_comment: args.order_comment ? args.order_comment : '',
-    created_at: new Date(Date.now() + 3 * 60 * 60 * 1000),
     secret_key: args.secret_key
   }
 

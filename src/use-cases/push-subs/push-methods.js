@@ -70,7 +70,8 @@ async function getAllAdminSubscriptions() {
   return result.rows.map(mapRowToSubscription);
 }
 
-async function deleteSubscription(endpoint) {
+async function deleteSubscription(body) {
+  const { endpoint } = body
   await push_subscriptions.query(
     `DELETE FROM push_subscriptions WHERE endpoint = $1`,
     [endpoint]

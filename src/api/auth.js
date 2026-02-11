@@ -10,10 +10,6 @@ const {deleteSubscription} = require('../use-cases/push-subs/push-methods')
 
 
 module.exports = {
-    async read () {
-        return await safeDbCall(() => admins.read())
-    }, 
-
     async login(args, req, res) {
         return await loginAdmin(args, res)
     },

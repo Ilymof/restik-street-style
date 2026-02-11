@@ -45,12 +45,5 @@ module.exports = {
         console.error('Не удалось отправить push админам:', err)
       }
     return newOrderArray
-  },
-
-  update: async (rawBody) => {
-    if (!UpdateOrderSchema.check(rawBody).valid){
-      throw throwValidationError(UpdateOrderSchema.check(rawBody).errors[0])
-    }   
-    return await updateOrder(rawBody)
   }
 }

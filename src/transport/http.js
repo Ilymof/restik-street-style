@@ -28,35 +28,21 @@ const receiveRawBody = async (req) => {
 };
 
 const mimeTypes = {
-    '.html': 'text/html',
-    '.js': 'application/javascript',
-    '.css': 'text/css',
     '.jpg': 'image/jpeg',
     '.jpeg': 'image/jpeg',
     '.png': 'image/png',
-    '.webp': 'image/webp',
-    '.xml': 'text/xml',
-    '.ico': 'image/x-icon'
+    '.webp': 'image/webp'
 };
 
-// const allowedOrigins = [
-//     'https://apsny-billboard-production.up.railway.app',
-//     'http://localhost:8800',
-//     'http://83.222.18.3',
-//     'ws://localhost:8800'
-// ];
+
 
 module.exports = (routing, port) => {
     const server = http.createServer(async (req, res) => {
-        // const origin = req.headers.origin;
-        // if (allowedOrigins.includes(origin)) {
-        //     res.setHeader('Access-Control-Allow-Origin', origin);
-        // } else {
-        //     res.setHeader('Access-Control-Allow-Origin', '');
-        // }
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Access-Control-Allow-Methods', '*');
+        
+        res.setHeader('Access-Control-Allow-Origin', 'https://pizzaabh.ru');
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
         res.setHeader('Access-Control-Allow-Headers', '*');  // теперь реально работает!
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
 
         if (req.method === 'OPTIONS') {
             res.writeHead(204);

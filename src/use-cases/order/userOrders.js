@@ -22,14 +22,8 @@ const userOrders = async (secret_key) => {
         secret_key
         FROM orders
         WHERE secret_key = $1
-    ORDER BY 
-      CASE 
-        WHEN current_status = 'В процессе' THEN 1
-        WHEN current_status = 'Готов' THEN 2
-        WHEN current_status = 'Отменён' THEN 3
-        ELSE 4 
-      END ASC,
-      created_at DESC;
+    ORDER BY
+      created_at ASC;
     `
     const result = await safeDbCall(() => orders.query(sql, [secret_key]))
     if (!result || result.rows.length<1){

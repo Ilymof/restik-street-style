@@ -11,12 +11,12 @@ const {UpdateOrderSchema} = require('../schemas/orderMetaSchema.js')
 const {checkOpeningHours} = require('../lib/checkOpeningHours.js')
 const { notifyAdmins} = require('../lib/push-notifications.js')
 const throwValidationError = require('../lib/ValidationError')
-const cleanOrders = require('../use-cases/order/autoOrderCleaner.js')
+// const cleanOrders = require('../use-cases/order/autoOrderCleaner.js')
 
-cron.schedule('*/5 * * * *', async () => {
-  console.log('Running cleanup...');
-  await cleanOrders()
-})
+// cron.schedule('*/5 * * * *', async () => {
+//   console.log('Running cleanup...');
+//   await cleanOrders()
+// })
 
 module.exports = {
   'read-all': async () => await safeDbCall(() => orders.read()),

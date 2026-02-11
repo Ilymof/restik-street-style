@@ -23,7 +23,7 @@ const userOrders = async (secret_key) => {
         FROM orders
         WHERE secret_key = $1
     ORDER BY
-      created_at ASC;
+      created_at DESC;
     `
     const result = await safeDbCall(() => orders.query(sql, [secret_key]))
     if (!result || result.rows.length<1){
